@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    overflow-x: hidden;
+  }
+
+  body {
+    color: #c8d9cf;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #0c1411;
+    background-image:
+      radial-gradient(ellipse 100% 70% at 0% -10%, rgba(74, 107, 88, 0.28), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 30%, rgba(45, 74, 62, 0.18), transparent),
+      linear-gradient(168deg, #0a100e 0%, #121f1a 42%, #0c1512 100%);
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+.safe-top {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.md\:safe-top-0 {
+  padding-top: 0;
+}
+@media (min-width: 768px) {
+  .md\:safe-top-0 {
+    padding-top: 0;
+  }
+}
+
+/* Scrollbar — batang kayu gelap */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #0a100e;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3d5c4a, #1e3329);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c9a962;
+}
+
+@layer components {
+  .elf-sidebar {
+    background: linear-gradient(175deg, #0d1612 0%, #14221c 55%, #0a100e 100%);
+    border-right: 1px solid rgba(201, 169, 98, 0.12);
+    box-shadow: 12px 0 48px rgba(0, 0, 0, 0.35);
+  }
+
+  .elf-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .elf-folio {
+    @apply rounded-2xl border border-nest-gold/25 bg-nest-surface text-folio-ink shadow-folio;
+    background-image: linear-gradient(148deg, #f7f3ea 0%, #ebe4d6 48%, #e3dbc9 100%);
+  }
+
+  .elf-folio-inset {
+    @apply rounded-xl border bg-white/35;
+    border-color: rgba(26, 40, 34, 0.12);
+  }
+
+  .elf-nav-link {
+    @apply relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-mist-dim duration-200;
+    transition-property: color, background-color;
+  }
+
+  .elf-nav-link:hover {
+    @apply text-mist bg-white/5;
+  }
+
+  .elf-nav-active {
+    @apply text-mist bg-gradient-to-r from-nest-secondary/90 to-nest-warm/40;
+    box-shadow: inset 3px 0 0 #c9a962;
+  }
+
+  .elf-btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-mist duration-200;
+    min-height: 44px;
+    transition-property: transform, box-shadow, background;
+    background: linear-gradient(145deg, #2f4f40 0%, #1e3329 100%);
+    border: 1px solid rgba(201, 169, 98, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .elf-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(201, 169, 98, 0.2);
+  }
+
+  .elf-btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-mist-dim border border-white/10 hover:border-nest-gold/30 hover:text-mist transition-colors;
+  }
+
+  .elf-input {
+    @apply w-full px-3.5 py-2.5 text-base sm:text-sm rounded-xl border bg-white/50 text-folio-ink placeholder:text-folio-muted/70;
+    min-height: 44px;
+    @apply focus:outline-none focus:ring-2 focus:ring-nest-gold/35 focus:border-nest-gold/40;
+    border-color: rgba(26, 40, 34, 0.12);
+  }
+
+  .elf-table-head {
+    background: linear-gradient(90deg, #1a2822 0%, #243d32 100%);
+    @apply text-mist text-xs font-semibold;
+  }
+
+  .elf-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 169, 98, 0.35), transparent);
+  }
+
+  .elf-mark {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: 'SOFT' 50, 'WONK' 1;
+  }
+}
+
+.badge-baik {
+  background: linear-gradient(135deg, #3d5c4a, #2a4538);
+  color: #e8f0eb;
+  border: 1px solid rgba(168, 196, 184, 0.25);
+}
+.badge-cukup {
+  background: linear-gradient(135deg, #8a7b4a, #6b5f38);
+  color: #f5f0e4;
+}
+.badge-rusak-ringan {
+  background: linear-gradient(135deg, #8b6848, #6d4f35);
+  color: #f8efe8;
+}
+.badge-rusak-berat {
+  background: linear-gradient(135deg, #7a3d3d, #5c2e2e);
+  color: #fce8e6;
+}
+
+.badge-tersedia {
+  background: rgba(74, 107, 88, 0.15);
+  color: #2d4a3e;
+  border: 1px solid rgba(74, 107, 88, 0.35);
+}
+.badge-sebagian-rusak {
+  background: rgba(166, 124, 82, 0.12);
+  color: #6d4f35;
+  border: 1px solid rgba(166, 124, 82, 0.35);
+}
+.badge-tidak-tersedia {
+  background: rgba(158, 74, 74, 0.1);
+  color: #7a3d3d;
+  border: 1px solid rgba(158, 74, 74, 0.3);
+}
+.badge-hilang {
+  background: rgba(90, 111, 100, 0.12);
+  color: #3d4f45;
+  border: 1px solid rgba(90, 111, 100, 0.25);
+}
+.badge-diarsipkan {
+  background: rgba(26, 40, 34, 0.08);
+  color: #4a5c52;
+  border: 1px solid rgba(26, 40, 34, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elf-btn:hover {
+    transform: none;
+  }
+}

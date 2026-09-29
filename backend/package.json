@@ -1,0 +1,20 @@
+{
+  "name": "booknest-backend",
+  "version": "1.0.0",
+  "description": "API BookNest — Manajemen Koleksi Buku",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js",
+    "test": "node --test src/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^11.0.3"
+  }
+}

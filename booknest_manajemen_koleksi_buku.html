@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookNest — Manajemen Koleksi Buku</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Dashboard Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nest-primary': '#3E2A21',
+                        'nest-dark': '#2A1F1B',
+                        'nest-secondary': '#5B3A2A',
+                        'nest-warm': '#7A4F3A',
+                        'nest-gold': '#C99A5A',
+                        'nest-bg': '#F8F3EE',
+                        'nest-surface': '#FFFFFF',
+                        'nest-border': '#E9D9C6',
+                        'nest-text': '#2A1F1B',
+                        'nest-muted': '#6D5C53',
+                        'nest-olive': '#6C7A5A',
+                        'nest-danger': '#A24B3A',
+                        'nest-beige': '#D4A359',
+                        'nest-orange': '#C86D3B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F8F3EE;
+            color: #2A1F1B;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8F3EE;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E9D9C6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C99A5A;
+        }
+
+        /* Badge Color Custom Specifications */
+        .badge-baik { background-color: #6C7A5A; color: #FFFFFF; }
+        .badge-cukup { background-color: #D4A359; color: #FFFFFF; }
+        .badge-rusak-ringan { background-color: #C86D3B; color: #FFFFFF; }
+        .badge-rusak-berat { background-color: #A24B3A; color: #FFFFFF; }
+
+        .badge-tersedia { background-color: #EBF3E8; color: #3B5A2B; border: 1px solid #B4D5A7; }
+        .badge-sebagian-rusak { background-color: #FFF3E0; color: #9C511B; border: 1px solid #FFCC80; }
+        .badge-tidak-tersedia { background-color: #FCE8E6; color: #8C2219; border: 1px solid #F5B0AC; }
+        .badge-hilang { background-color: #EFEBE9; color: #4E342E; border: 1px solid #D7CCC8; }
+        .badge-diarsipkan { background-color: #ECEFF1; color: #37474F; border: 1px solid #CFD8DC; }
+
+        .sidebar-item-active {
+            background-color: #5B3A2A;
+            border-left: 4px solid #C99A5A;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased selection:bg-nest-gold selection:text-white">
+
+    <div class="md:hidden bg-nest-primary text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid me-1 fa-book-bookmark text-nest-gold text-2xl"></i>
+            <div>
+                <h1 class="font-serif font-bold text-lg leading-none">BookNest</h1>
+                <p class="text-[10px] text-nest-border tracking-wider uppercase">Manajemen Koleksi</p>
+            </div>
+        </div>
+        <button id="mobileMenuBtn" class="p-2 text-nest-border hover:text-white focus:outline-none">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-nest-primary text-white flex-shrink-0 min-h-screen sticky top-0 h-screen overflow-y-auto transition-all duration-300 z-40">
+        <!-- Logo Header -->
+        <div class="p-6 border-b border-nest-secondary flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg bg-nest-secondary flex items-center justify-center border border-nest-gold text-nest-gold shadow-inner">
+                <i class="fa-solid fa-book-bookmark text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-serif font-bold text-xl tracking-tight">BookNest</h1>
+                <p class="text-xs text-nest-border opacity-80">Koleksi & Inventaris</p>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 py-6 space-y-1 px-3">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="sidebar-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-nest-border hover:bg-nest-secondary hover:text-white transition-colors">
+                <i class="fa-solid fa-chart-pie w-5 text-center text-nest-gold"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button onclick="switchView('koleksi')" id="nav-koleksi" class="sidebar-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-nest-border hover:bg-nest-secondary hover:text-white transition-colors">
+                <i class="fa-solid fa-books w-5 text-center text-nest-gold"></i>
+                <span>Daftar Koleksi</span>
+            </button>
+
+            <button onclick="openFormModal('add')" id="nav-tambah" class="sidebar-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-nest-border hover:bg-nest-secondary hover:text-white transition-colors">
+                <i class="fa-solid fa-circle-plus w-5 text-center text-nest-gold"></i>
+                <span>Tambah Buku</span>
+            </button>
+
+            <button onclick="switchView('kategori')" id="nav-kategori" class="sidebar-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-nest-border hover:bg-nest-secondary hover:text-white transition-colors">
+                <i class="fa-solid fa-layer-group w-5 text-center text-nest-gold"></i>
+                <span>Kategori</span>
+            </button>
+        </nav>
+
+        <!-- Footer Info -->
+        <div class="p-4 border-t border-nest-secondary bg-nest-dark/40 text-xs text-nest-border">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-nest-gold font-semibold">Sistem Koleksi v1.0</span>
+                <span id="totalBooksBadge" class="bg-nest-secondary text-nest-border px-2 py-0.5 rounded text-[10px]">0 Buku</span>
+            </div>
+            <p class="opacity-70 text-[11px]">Pengelolaan tanpa fitur penjualan/peminjaman.</p>
+            <button onclick="resetToSampleData()" class="mt-3 text-[11px] text-nest-gold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-rotate-left"></i> Reset Data Bawaan
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto min-h-screen p-4 md:p-8 space-y-6">
+
+        <section id="view-dashboard" class="space-y-6">
+            <!-- Top Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-nest-border">
+                <div>
+                    <h2 class="text-2xl font-bold font-serif text-nest-dark">Dashboard Inventaris</h2>
+                    <p class="text-sm text-nest-muted">Ringkasan statistik koleksi dan kondisi fisik buku saat ini.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openFormModal('add')" class="bg-nest-secondary hover:bg-nest-warm text-white px-4 py-2 rounded-lg text-sm font-medium shadow flex items-center gap-2 transition">
+                        <i class="fa-solid fa-plus text-nest-gold"></i> Tambah Buku Baru
+                    </button>
+                </div>
+            </div>
+
+            <!-- 6 Key Statistics Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Total Judul</span>
+                        <i class="fa-solid fa-book text-nest-gold text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-total-judul" class="text-2xl font-bold text-nest-dark">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Judul Terdaftar</p>
+                    </div>
+                </div>
+
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Total Eksemplar</span>
+                        <i class="fa-solid fa-copy text-nest-gold text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-total-eksemplar" class="text-2xl font-bold text-nest-dark">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Fisik Buku</p>
+                    </div>
+                </div>
+
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Kategori</span>
+                        <i class="fa-solid fa-tags text-nest-gold text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-total-kategori" class="text-2xl font-bold text-nest-dark">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Kelompok Klasifikasi</p>
+                    </div>
+                </div>
+
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Buku Tersedia</span>
+                        <i class="fa-solid fa-circle-check text-nest-olive text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-buku-tersedia" class="text-2xl font-bold text-nest-olive">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Siap Diakses</p>
+                    </div>
+                </div>
+
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Buku Rusak</span>
+                        <i class="fa-solid fa-triangle-exclamation text-nest-danger text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-buku-rusak" class="text-2xl font-bold text-nest-danger">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Perlu Perbaikan</p>
+                    </div>
+                </div>
+
+                <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-nest-muted mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider">Diarsipkan</span>
+                        <i class="fa-solid fa-box-archive text-nest-warm text-lg"></i>
+                    </div>
+                    <div>
+                        <div id="stat-buku-diarsipkan" class="text-2xl font-bold text-nest-warm">0</div>
+                        <p class="text-[11px] text-nest-muted mt-1">Non-aktif</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chart: Categories Distribution -->
+                <div class="bg-nest-surface p-5 rounded-xl border border-nest-border shadow-sm">
+                    <h3 class="font-serif font-bold text-lg text-nest-dark mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-nest-gold"></i> Distribusi Buku Berdasarkan Kategori
+                    </h3>
+                    <div class="relative h-64">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart: Rack Location Distribution -->
+                <div class="bg-nest-surface p-5 rounded-xl border border-nest-border shadow-sm">
+                    <h3 class="font-serif font-bold text-lg text-nest-dark mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shelves text-nest-gold"></i> Distribusi Berdasarkan Lokasi Rak
+                    </h3>
+                    <div class="relative h-64">
+                        <canvas id="rackChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recently Added Books -->
+                <div class="bg-nest-surface p-5 rounded-xl border border-nest-border shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-serif font-bold text-lg text-nest-dark flex items-center gap-2">
+                            <i class="fa-solid fa-sparkles text-nest-gold"></i> Baru Ditambahkan
+                        </h3>
+                        <button onclick="switchView('koleksi')" class="text-xs text-nest-warm hover:text-nest-primary font-semibold">Lihat Semua →</button>
+                    </div>
+                    <div id="dashboard-recent-list" class="divide-y divide-nest-border/60">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Books needing attention / Damaged Books -->
+                <div class="bg-nest-surface p-5 rounded-xl border border-nest-border shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-serif font-bold text-lg text-nest-dark flex items-center gap-2">
+                            <i class="fa-solid fa-wrench text-nest-danger"></i> Daftar Buku Fisik Rusak
+                        </h3>
+                        <span class="text-xs text-nest-muted">Rusak Ringan & Rusak Berat</span>
+                    </div>
+                    <div id="dashboard-damaged-list" class="divide-y divide-nest-border/60">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-koleksi" class="space-y-6 hidden">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-nest-border">
+                <div>
+                    <h2 class="text-2xl font-bold font-serif text-nest-dark">Koleksi Buku</h2>
+                    <p class="text-sm text-nest-muted">Kelola seluruh koleksi dan inventaris buku dalam sistem.</p>
+                </div>
+                <button onclick="openFormModal('add')" class="bg-nest-secondary hover:bg-nest-warm text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-plus text-nest-gold"></i> + Tambah Buku
+                </button>
+            </div>
+
+            <!-- Toolbar & Filters -->
+            <div class="bg-nest-surface p-4 rounded-xl border border-nest-border shadow-sm space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <!-- Search input -->
+                    <div class="lg:col-span-2 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-nest-muted text-sm"></i>
+                        <input type="text" id="filterSearch" oninput="applyFilters()" placeholder="Cari judul, penulis, atau ISBN..." class="w-full pl-9 pr-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div>
+                        <select id="filterKategori" onchange="applyFilters()" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold text-nest-text">
+                            <option value="">Semua Kategori</option>
+                        </select>
+                    </div>
+
+                    <!-- Condition Filter -->
+                    <div>
+                        <select id="filterKondisi" onchange="applyFilters()" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold text-nest-text">
+                            <option value="">Semua Kondisi</option>
+                            <option value="Baik">Baik</option>
+                            <option value="Cukup Baik">Cukup Baik</option>
+                            <option value="Rusak Ringan">Rusak Ringan</option>
+                            <option value="Rusak Berat">Rusak Berat</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <select id="filterStatus" onchange="applyFilters()" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold text-nest-text">
+                            <option value="">Semua Status</option>
+                            <option value="Tersedia">Tersedia</option>
+                            <option value="Sebagian Rusak">Sebagian Rusak</option>
+                            <option value="Tidak Tersedia">Tidak Tersedia</option>
+                            <option value="Hilang">Hilang</option>
+                            <option value="Diarsipkan">Diarsipkan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Reset Filter & Sort bar -->
+                <div class="flex flex-wrap items-center justify-between text-xs text-nest-muted pt-2 border-t border-nest-border/50 gap-2">
+                    <div class="flex items-center gap-2">
+                        <span>Urutkan:</span>
+                        <select id="filterSort" onchange="applyFilters()" class="bg-nest-bg border border-nest-border rounded px-2 py-1 text-xs text-nest-text focus:outline-none">
+                            <option value="judul-asc">Judul (A - Z)</option>
+                            <option value="judul-desc">Judul (Z - A)</option>
+                            <option value="tahun-desc">Tahun Terbit (Terbaru)</option>
+                            <option value="tahun-asc">Tahun Terbit (Terlama)</option>
+                        </select>
+                    </div>
+
+                    <button onclick="resetFilters()" class="text-nest-warm hover:text-nest-primary font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-right"></i> Reset Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Books Table -->
+            <div class="bg-nest-surface rounded-xl border border-nest-border shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-nest-primary text-white text-xs uppercase tracking-wider font-semibold">
+                                <th class="p-3.5">Judul Buku</th>
+                                <th class="p-3.5">Penulis</th>
+                                <th class="p-3.5">Kategori</th>
+                                <th class="p-3.5 text-center">Eksemplar</th>
+                                <th class="p-3.5">Lokasi Rak</th>
+                                <th class="p-3.5">Kondisi</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody" class="divide-y divide-nest-border/60 text-sm">
+                            <!-- Populated dynamically by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Table Summary Footer -->
+                <div class="p-4 bg-nest-bg/50 border-t border-nest-border flex items-center justify-between text-xs text-nest-muted">
+                    <span id="collectionCountInfo">Menampilkan 0 buku</span>
+                    <span>BookNest Library System</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-detail" class="space-y-6 hidden">
+            <!-- Back navigation -->
+            <div>
+                <button onclick="switchView('koleksi')" class="text-sm text-nest-warm hover:text-nest-primary font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Koleksi
+                </button>
+            </div>
+
+            <!-- Detail Card -->
+            <div id="detailContainer" class="bg-nest-surface rounded-xl border border-nest-border shadow-sm p-6 md:p-8">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </section>
+
+        <section id="view-kategori" class="space-y-6 hidden">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-nest-border">
+                <div>
+                    <h2 class="text-2xl font-bold font-serif text-nest-dark">Kategori Buku</h2>
+                    <p class="text-sm text-nest-muted">Kelompokkan koleksi berdasarkan genre atau rumpun ilmu.</p>
+                </div>
+                <button onclick="openCategoryModal()" class="bg-nest-secondary hover:bg-nest-warm text-white px-4 py-2.5 rounded-lg text-sm font-medium shadow flex items-center gap-2 transition">
+                    <i class="fa-solid fa-folder-plus text-nest-gold"></i> + Tambah Kategori
+                </button>
+            </div>
+
+            <!-- Category List Table -->
+            <div class="bg-nest-surface rounded-xl border border-nest-border shadow-sm overflow-hidden max-w-3xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-nest-primary text-white text-xs uppercase tracking-wider font-semibold">
+                            <th class="p-4">Kategori</th>
+                            <th class="p-4 text-center">Jumlah Judul Buku</th>
+                            <th class="p-4 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody" class="divide-y divide-nest-border/60 text-sm">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="bookFormModal" class="fixed inset-0 bg-nest-dark/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-nest-surface rounded-xl border border-nest-border shadow-2xl w-full max-w-2xl my-8 overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-nest-primary text-white p-5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i id="formModalIcon" class="fa-solid fa-book text-nest-gold text-xl"></i>
+                    <h3 id="formModalTitle" class="font-serif font-bold text-lg">Tambah Buku Baru</h3>
+                </div>
+                <button onclick="closeFormModal()" class="text-nest-border hover:text-white text-xl focus:outline-none">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="bookForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="bookId">
+
+                <!-- Section 1: Informasi Buku -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider border-b border-nest-border pb-1">1. Informasi Bibliografi</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Judul Buku *</label>
+                            <input type="text" id="inputJudul" required placeholder="Contoh: Bumi" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Penulis *</label>
+                            <input type="text" id="inputPenulis" required placeholder="Contoh: Tere Liye" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">ISBN *</label>
+                            <input type="text" id="inputISBN" required placeholder="Contoh: 978-602-03-3295-7" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Penerbit *</label>
+                            <input type="text" id="inputPenerbit" required placeholder="Gramedia Pustaka Utama" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Tahun Terbit *</label>
+                            <input type="number" id="inputTahunTerbit" required min="1800" max="2030" placeholder="2019" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Kategori *</label>
+                            <select id="inputKategori" required class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                                <option value="">[ Pilih Kategori ]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Informasi Inventaris -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider border-b border-nest-border pb-1">2. Informasi Inventaris</h4>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Jumlah Eksemplar *</label>
+                            <input type="number" id="inputJumlahEksemplar" required min="0" placeholder="5" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Lokasi Rak *</label>
+                            <input type="text" id="inputLokasiRak" required placeholder="Rak A1" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Kondisi Buku *</label>
+                            <select id="inputKondisi" required class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                                <option value="Baik">Baik</option>
+                                <option value="Cukup Baik">Cukup Baik</option>
+                                <option value="Rusak Ringan">Rusak Ringan</option>
+                                <option value="Rusak Berat">Rusak Berat</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-nest-dark mb-1">Status Koleksi *</label>
+                            <select id="inputStatus" required class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                                <option value="Tersedia">Tersedia</option>
+                                <option value="Sebagian Rusak">Sebagian Rusak</option>
+                                <option value="Tidak Tersedia">Tidak Tersedia</option>
+                                <option value="Hilang">Hilang</option>
+                                <option value="Diarsipkan">Diarsipkan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Informasi Tambahan -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider border-b border-nest-border pb-1">3. Informasi Tambahan</h4>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-nest-dark mb-1">Deskripsi Ringkas</label>
+                        <textarea id="inputDeskripsi" rows="3" placeholder="Ringkasan cerita atau catatan kondisi koleksi..." class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-nest-dark mb-1">URL Gambar Sampul (Cover)</label>
+                        <input type="text" id="inputCover" placeholder="https://..." class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                        <p class="text-[11px] text-nest-muted mt-1">Biarkan kosong untuk menggunakan sampul placeholder standar.</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-nest-border">
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 text-sm text-nest-muted hover:text-nest-dark font-medium rounded-lg border border-nest-border hover:bg-nest-bg transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 text-sm text-white bg-nest-secondary hover:bg-nest-warm font-semibold rounded-lg shadow transition">
+                        Simpan Buku
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="fixed inset-0 bg-nest-dark/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-nest-surface rounded-xl border border-nest-border shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-nest-primary text-white p-4 flex items-center justify-between">
+                <h3 class="font-serif font-bold text-base">Tambah Kategori Baru</h3>
+                <button onclick="closeCategoryModal()" class="text-nest-border hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleCategorySubmit(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-nest-dark mb-1">Nama Kategori *</label>
+                    <input type="text" id="newCategoryName" required placeholder="Contoh: Sains & Alam" class="w-full px-3 py-2 text-sm bg-nest-bg border border-nest-border rounded-lg focus:outline-none focus:border-nest-gold">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeCategoryModal()" class="px-3 py-1.5 text-xs text-nest-muted border border-nest-border rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 text-xs text-white bg-nest-secondary hover:bg-nest-warm rounded-lg font-semibold">Simpan Kategori</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 bg-nest-dark/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-nest-surface rounded-xl border border-nest-border shadow-2xl w-full max-w-md overflow-hidden p-6 text-center space-y-4">
+            <div class="w-12 h-12 rounded-full bg-nest-danger/10 text-nest-danger flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-serif font-bold text-lg text-nest-dark">Konfirmasi Hapus Buku</h3>
+                <p class="text-xs text-nest-muted mt-1">Apakah Anda yakin ingin menghapus buku <strong id="deleteBookTitle" class="text-nest-dark"></strong> dari inventaris?</p>
+            </div>
+            <div class="flex items-center justify-center gap-3 pt-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 text-xs font-semibold text-nest-muted border border-nest-border rounded-lg hover:bg-nest-bg">Batal</button>
+                <button id="confirmDeleteBtn" class="px-4 py-2 text-xs font-semibold text-white bg-nest-danger hover:bg-red-700 rounded-lg shadow">Hapus Permanent</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-xl max-w-sm">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toastMessage" class="text-xs font-medium">Notifikasi berhasil</span>
+    </div>
+
+    <script>
+        // Sample default categories
+        const INITIAL_CATEGORIES = [
+            'Novel', 'Fiksi', 'Nonfiksi', 'Pendidikan', 'Sejarah', 
+            'Biografi', 'Teknologi', 'Agama', 'Anak-anak', 'Komik', 'Referensi'
+        ];
+
+        // Sample initial Indonesian book collection data
+        const INITIAL_BOOKS = [
+            {
+                id: 'bk-1',
+                judul: 'Bumi',
+                penulis: 'Tere Liye',
+                isbn: '978-602-03-3295-7',
+                penerbit: 'Gramedia Pustaka Utama',
+                tahunTerbit: 2014,
+                kategori: 'Novel',
+                jumlahEksemplar: 5,
+                lokasiRak: 'Rak A1',
+                kondisi: 'Baik',
+                status: 'Tersedia',
+                deskripsi: 'Petualangan Raib, Seli, dan Ali mengarungi dunia paralel dengan kekuatan supranatural unik.',
+                cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-01-10T08:00:00.000Z',
+                updatedAt: '2026-01-10T08:00:00.000Z'
+            },
+            {
+                id: 'bk-2',
+                judul: 'Laskar Pelangi',
+                penulis: 'Andrea Hirata',
+                isbn: '978-979-3062-79-2',
+                penerbit: 'Bentang Pustaka',
+                tahunTerbit: 2005,
+                kategori: 'Fiksi',
+                jumlahEksemplar: 3,
+                lokasiRak: 'Rak A2',
+                kondisi: 'Cukup Baik',
+                status: 'Tersedia',
+                deskripsi: 'Kisah inspiratif sepuluh anak dari keluarga miskin di Belitung dalam menggapai pendidikan.',
+                cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-01-12T09:30:00.000Z',
+                updatedAt: '2026-01-12T09:30:00.000Z'
+            },
+            {
+                id: 'bk-3',
+                judul: 'Filosofi Teras',
+                penulis: 'Henry Manampiring',
+                isbn: '978-602-412-518-9',
+                penerbit: 'Kompas',
+                tahunTerbit: 2018,
+                kategori: 'Nonfiksi',
+                jumlahEksemplar: 4,
+                lokasiRak: 'Rak B1',
+                kondisi: 'Baik',
+                status: 'Tersedia',
+                deskripsi: 'Penerapan Stoisisme klasik untuk menjaga kedamaian mental dalam kehidupan modern.',
+                cover: 'https://images.unsplash.com/photo-1532012164546-f4327311ed93?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-02-01T10:15:00.000Z',
+                updatedAt: '2026-02-01T10:15:00.000Z'
+            },
+            {
+                id: 'bk-4',
+                judul: 'Sejarah Dunia yang Disembunyikan',
+                penulis: 'Jonathan Black',
+                isbn: '978-602-04-1234-5',
+                penerbit: 'Alvabet',
+                tahunTerbit: 2015,
+                kategori: 'Sejarah',
+                jumlahEksemplar: 2,
+                lokasiRak: 'Rak C3',
+                kondisi: 'Rusak Ringan',
+                status: 'Sebagian Rusak',
+                deskripsi: 'Kajian alternatif mitologi dan organisasi rahasia dari sudut pandang sejarah rahasia.',
+                cover: 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-02-05T14:20:00.000Z',
+                updatedAt: '2026-02-05T14:20:00.000Z'
+            },
+            {
+                id: 'bk-5',
+                judul: 'Pemrograman Web Modern',
+                penulis: 'Rian Eka',
+                isbn: '978-602-888-990-1',
+                penerbit: 'Informatika',
+                tahunTerbit: 2022,
+                kategori: 'Teknologi',
+                jumlahEksemplar: 6,
+                lokasiRak: 'Rak D2',
+                kondisi: 'Baik',
+                status: 'Tersedia',
+                deskripsi: 'Panduan komprehensif membangun aplikasi web interaktif responsif.',
+                cover: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-02-10T11:00:00.000Z',
+                updatedAt: '2026-02-10T11:00:00.000Z'
+            },
+            {
+                id: 'bk-6',
+                judul: 'Bumi Manusia',
+                penulis: 'Pramoedya Ananta Toer',
+                isbn: '978-979-97312-3-5',
+                penerbit: 'Lentera Dipantara',
+                tahunTerbit: 1980,
+                kategori: 'Novel',
+                jumlahEksemplar: 1,
+                lokasiRak: 'Rak A1',
+                kondisi: 'Rusak Berat',
+                status: 'Tidak Tersedia',
+                deskripsi: 'Kisah Minke di awal abad ke-20 memperjuangkan kebebasan dan keadilan hak asasi.',
+                cover: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=400&q=80',
+                createdAt: '2026-02-15T09:00:00.000Z',
+                updatedAt: '2026-02-15T09:00:00.000Z'
+            }
+        ];
+
+        // Application State
+        let books = [];
+        let categories = [];
+        let categoryChartInstance = null;
+        let rackChartInstance = null;
+        let pendingDeleteId = null;
+
+        function initApp() {
+            // Load Books
+            const storedBooks = localStorage.getItem('booknest_books');
+            if (storedBooks) {
+                try { books = JSON.parse(storedBooks); } catch(e) { books = INITIAL_BOOKS; }
+            } else {
+                books = INITIAL_BOOKS;
+                saveBooks();
+            }
+
+            // Load Categories
+            const storedCats = localStorage.getItem('booknest_categories');
+            if (storedCats) {
+                try { categories = JSON.parse(storedCats); } catch(e) { categories = INITIAL_CATEGORIES; }
+            } else {
+                categories = INITIAL_CATEGORIES;
+                saveCategories();
+            }
+
+            // Bind Events & Populate Selects
+            populateCategoryDropdowns();
+            renderDashboard();
+            renderBooksTable();
+            renderCategoriesTable();
+
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+        }
+
+        function saveBooks() {
+            localStorage.setItem('booknest_books', JSON.stringify(books));
+            updateTotalBadge();
+        }
+
+        function saveCategories() {
+            localStorage.setItem('booknest_categories', JSON.stringify(categories));
+        }
+
+        function resetToSampleData() {
+            if (confirm("Reset data koleksi kembali ke sampel awal?")) {
+                books = INITIAL_BOOKS;
+                categories = INITIAL_CATEGORIES;
+                saveBooks();
+                saveCategories();
+                populateCategoryDropdowns();
+                renderDashboard();
+                renderBooksTable();
+                renderCategoriesTable();
+                showToast("Data telah di-reset ke data sampel.", "info");
+            }
+        }
+
+        function updateTotalBadge() {
+            document.getElementById('totalBooksBadge').textContent = `${books.length} Judul`;
+        }
+
+        function switchView(viewName) {
+            const views = ['dashboard', 'koleksi', 'detail', 'kategori'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+
+                const navEl = document.getElementById(`nav-${v}`);
+                if (navEl) navEl.classList.remove('sidebar-item-active');
+            });
+
+            const currentView = document.getElementById(`view-${viewName}`);
+            if (currentView) currentView.classList.remove('hidden');
+
+            const currentNav = document.getElementById(`nav-${viewName}`);
+            if (currentNav) currentNav.classList.add('sidebar-item-active');
+
+            // View specific refreshes
+            if (viewName === 'dashboard') {
+                renderDashboard();
+            } else if (viewName === 'koleksi') {
+                renderBooksTable();
+            } else if (viewName === 'kategori') {
+                renderCategoriesTable();
+            }
+
+            // Scroll top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function populateCategoryDropdowns() {
+            const filterCat = document.getElementById('filterKategori');
+            const inputCat = document.getElementById('inputKategori');
+
+            const currentFilterVal = filterCat.value;
+            const currentInputVal = inputCat.value;
+
+            filterCat.innerHTML = '<option value="">Semua Kategori</option>';
+            inputCat.innerHTML = '<option value="">[ Pilih Kategori ]</option>';
+
+            categories.forEach(cat => {
+                filterCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+                inputCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            filterCat.value = currentFilterVal;
+            inputCat.value = currentInputVal;
+        }
+
+        function renderDashboard() {
+            // Stats Calculation
+            const totalJudul = books.length;
+            const totalEksemplar = books.reduce((acc, b) => acc + (parseInt(b.jumlahEksemplar) || 0), 0);
+            const totalKategori = categories.length;
+
+            const bukuTersedia = books.filter(b => b.status === 'Tersedia').length;
+            const bukuRusak = books.filter(b => b.kondisi === 'Rusak Ringan' || b.kondisi === 'Rusak Berat').length;
+            const bukuDiarsipkan = books.filter(b => b.status === 'Diarsipkan').length;
+
+            document.getElementById('stat-total-judul').textContent = totalJudul;
+            document.getElementById('stat-total-eksemplar').textContent = totalEksemplar;
+            document.getElementById('stat-total-kategori').textContent = totalKategori;
+            document.getElementById('stat-buku-tersedia').textContent = bukuTersedia;
+            document.getElementById('stat-buku-rusak').textContent = bukuRusak;
+            document.getElementById('stat-buku-diarsipkan').textContent = bukuDiarsipkan;
+
+            // Render Charts
+            renderCategoryChart();
+            renderRackChart();
+
+            // Recently Added (top 4 sorted by createdAt)
+            const recent = [...books].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 4);
+            const recentContainer = document.getElementById('dashboard-recent-list');
+            if (recent.length === 0) {
+                recentContainer.innerHTML = `<p class="text-xs text-nest-muted p-4 text-center">Belum ada koleksi buku.</p>`;
+            } else {
+                recentContainer.innerHTML = recent.map(b => `
+                    <div class="py-3 flex items-center justify-between hover:bg-nest-bg/50 px-2 rounded-lg transition cursor-pointer" onclick="viewBookDetail('${b.id}')">
+                        <div class="flex items-center space-x-3">
+                            <img src="${b.cover}" onerror="this.src='https://placehold.co/100x140/3E2A21/C99A5A?text=BookNest'" class="w-10 h-14 object-cover rounded shadow-sm">
+                            <div>
+                                <h4 class="text-xs font-bold text-nest-dark hover:text-nest-warm">${escapeHtml(b.judul)}</h4>
+                                <p class="text-[11px] text-nest-muted">${escapeHtml(b.penulis)} · <span class="text-nest-gold">${b.kategori}</span></p>
+                                <p class="text-[10px] text-nest-muted opacity-75">Rak: ${escapeHtml(b.lokasiRak)}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            ${getKondisiBadge(b.kondisi)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Damaged Books List
+            const damaged = books.filter(b => b.kondisi === 'Rusak Ringan' || b.kondisi === 'Rusak Berat');
+            const damagedContainer = document.getElementById('dashboard-damaged-list');
+            if (damaged.length === 0) {
+                damagedContainer.innerHTML = `<p class="text-xs text-nest-olive p-4 text-center"><i class="fa-solid fa-circle-check"></i> Tidak ada buku berkondisi rusak saat ini.</p>`;
+            } else {
+                damagedContainer.innerHTML = damaged.map(b => `
+                    <div class="py-3 flex items-center justify-between hover:bg-nest-bg/50 px-2 rounded-lg transition cursor-pointer" onclick="viewBookDetail('${b.id}')">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded bg-nest-danger/10 text-nest-danger flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-book-medical"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-nest-dark">${escapeHtml(b.judul)}</h4>
+                                <p class="text-[11px] text-nest-muted">Rak: ${escapeHtml(b.lokasiRak)} · ${b.jumlahEksemplar} Eks.</p>
+                            </div>
+                        </div>
+                        <div>
+                            ${getKondisiBadge(b.kondisi)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChartInstance) categoryChartInstance.destroy();
+
+            const counts = {};
+            categories.forEach(c => counts[c] = 0);
+            books.forEach(b => {
+                if (counts[b.kategori] !== undefined) counts[b.kategori]++;
+                else counts[b.kategori] = 1;
+            });
+
+            const labels = Object.keys(counts).filter(k => counts[k] > 0);
+            const data = labels.map(k => counts[k]);
+
+            categoryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['Belum ada'],
+                    datasets: [{
+                        label: 'Jumlah Judul',
+                        data: data.length ? data : [0],
+                        backgroundColor: '#7A4F3A',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        function renderRackChart() {
+            const ctx = document.getElementById('rackChart').getContext('2d');
+            if (rackChartInstance) rackChartInstance.destroy();
+
+            const rackMap = {};
+            books.forEach(b => {
+                const rack = b.lokasiRak || 'Lainnya';
+                rackMap[rack] = (rackMap[rack] || 0) + parseInt(b.jumlahEksemplar || 1);
+            });
+
+            const labels = Object.keys(rackMap);
+            const data = Object.values(rackMap);
+
+            rackChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Kosong'],
+                    datasets: [{
+                        data: data.length ? data : [1],
+                        backgroundColor: [
+                            '#3E2A21', '#5B3A2A', '#7A4F3A', '#C99A5A', 
+                            '#6C7A5A', '#A24B3A', '#D4A359', '#C86D3B'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function renderBooksTable() {
+            const search = document.getElementById('filterSearch').value.toLowerCase();
+            const cat = document.getElementById('filterKategori').value;
+            const kon = document.getElementById('filterKondisi').value;
+            const sta = document.getElementById('filterStatus').value;
+            const sort = document.getElementById('filterSort').value;
+
+            let filtered = books.filter(b => {
+                const matchSearch = b.judul.toLowerCase().includes(search) || 
+                                    b.penulis.toLowerCase().includes(search) || 
+                                    b.isbn.toLowerCase().includes(search);
+                const matchCat = cat === '' || b.kategori === cat;
+                const matchKon = kon === '' || b.kondisi === kon;
+                const matchSta = sta === '' || b.status === sta;
+
+                return matchSearch && matchCat && matchKon && matchSta;
+            });
+
+            // Sorting
+            filtered.sort((a,b) => {
+                if (sort === 'judul-asc') return a.judul.localeCompare(b.judul);
+                if (sort === 'judul-desc') return b.judul.localeCompare(a.judul);
+                if (sort === 'tahun-desc') return b.tahunTerbit - a.tahunTerbit;
+                if (sort === 'tahun-asc') return a.tahunTerbit - b.tahunTerbit;
+                return 0;
+            });
+
+            const tbody = document.getElementById('booksTableBody');
+            document.getElementById('collectionCountInfo').textContent = `Menampilkan ${filtered.length} dari ${books.length} buku`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="p-8 text-center text-nest-muted">
+                            <i class="fa-solid fa-folder-open text-3xl mb-2 text-nest-border"></i>
+                            <p>Tidak ada data buku yang sesuai dengan pencarian / filter.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(b => `
+                <tr class="hover:bg-nest-bg/60 transition border-b border-nest-border/40">
+                    <td class="p-3.5">
+                        <div class="flex items-center space-x-3">
+                            <img src="${b.cover}" onerror="this.src='https://placehold.co/100x140/3E2A21/C99A5A?text=Book'" class="w-9 h-12 object-cover rounded shadow-xs flex-shrink-0">
+                            <div>
+                                <a href="javascript:void(0)" onclick="viewBookDetail('${b.id}')" class="font-bold text-nest-dark hover:text-nest-warm transition block">${escapeHtml(b.judul)}</a>
+                                <span class="text-[11px] text-nest-muted">ISBN: ${escapeHtml(b.isbn)}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3.5 font-medium text-nest-dark">${escapeHtml(b.penulis)}</td>
+                    <td class="p-3.5"><span class="bg-nest-bg text-nest-warm px-2.5 py-1 rounded-full text-xs border border-nest-border font-medium">${escapeHtml(b.kategori)}</span></td>
+                    <td class="p-3.5 text-center font-semibold text-nest-dark">${b.jumlahEksemplar}</td>
+                    <td class="p-3.5 text-nest-muted font-medium">${escapeHtml(b.lokasiRak)}</td>
+                    <td class="p-3.5">${getKondisiBadge(b.kondisi)}</td>
+                    <td class="p-3.5">${getStatusBadge(b.status)}</td>
+                    <td class="p-3.5 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewBookDetail('${b.id}')" title="Lihat Detail" class="p-1.5 text-nest-muted hover:text-nest-primary hover:bg-nest-border/40 rounded transition">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <button onclick="openFormModal('edit', '${b.id}')" title="Edit Buku" class="p-1.5 text-nest-muted hover:text-nest-gold hover:bg-nest-border/40 rounded transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="openDeleteModal('${b.id}', '${escapeHtml(b.judul)}')" title="Hapus Buku" class="p-1.5 text-nest-muted hover:text-nest-danger hover:bg-nest-border/40 rounded transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function applyFilters() {
+            renderBooksTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterKategori').value = '';
+            document.getElementById('filterKondisi').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterSort').value = 'judul-asc';
+            renderBooksTable();
+        }
+
+        function getKondisiBadge(kondisi) {
+            let className = 'badge-baik';
+            if (kondisi === 'Cukup Baik') className = 'badge-cukup';
+            else if (kondisi === 'Rusak Ringan') className = 'badge-rusak-ringan';
+            else if (kondisi === 'Rusak Berat') className = 'badge-rusak-berat';
+
+            return `<span class="px-2.5 py-0.5 rounded text-[11px] font-semibold ${className}">${kondisi}</span>`;
+        }
+
+        function getStatusBadge(status) {
+            let className = 'badge-tersedia';
+            if (status === 'Sebagian Rusak') className = 'badge-sebagian-rusak';
+            else if (status === 'Tidak Tersedia') className = 'badge-tidak-tersedia';
+            else if (status === 'Hilang') className = 'badge-hilang';
+            else if (status === 'Diarsipkan') className = 'badge-diarsipkan';
+
+            return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${className}">${status}</span>`;
+        }
+
+        function viewBookDetail(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            const container = document.getElementById('detailContainer');
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Left: Cover -->
+                    <div class="space-y-4 text-center md:text-left">
+                        <div class="relative group">
+                            <img src="${book.cover}" onerror="this.src='https://placehold.co/300x420/3E2A21/C99A5A?text=BookNest'" class="w-full max-w-xs mx-auto md:mx-0 rounded-xl shadow-lg border border-nest-border object-cover aspect-[3/4]">
+                        </div>
+                        <div class="pt-2 flex flex-wrap gap-2 justify-center md:justify-start">
+                            ${getKondisiBadge(book.kondisi)}
+                            ${getStatusBadge(book.status)}
+                        </div>
+                    </div>
+
+                    <!-- Right: Info -->
+                    <div class="md:col-span-2 space-y-6">
+                        <div>
+                            <span class="text-xs uppercase font-bold text-nest-gold tracking-widest">${escapeHtml(book.kategori)}</span>
+                            <h2 class="text-3xl font-serif font-bold text-nest-dark mt-1">${escapeHtml(book.judul)}</h2>
+                            <p class="text-base text-nest-muted font-medium mt-1">Oleh <span class="text-nest-dark">${escapeHtml(book.penulis)}</span></p>
+                        </div>
+
+                        <!-- Info Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 bg-nest-bg/60 rounded-xl border border-nest-border">
+                            <!-- Bibliografi -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider border-b border-nest-border/60 pb-1">Informasi Bibliografi</h4>
+                                <ul class="text-xs space-y-1.5 text-nest-text">
+                                    <li><span class="text-nest-muted">ISBN:</span> <strong>${escapeHtml(book.isbn)}</strong></li>
+                                    <li><span class="text-nest-muted">Penerbit:</span> <strong>${escapeHtml(book.penerbit)}</strong></li>
+                                    <li><span class="text-nest-muted">Tahun Terbit:</span> <strong>${book.tahunTerbit}</strong></li>
+                                    <li><span class="text-nest-muted">Kategori:</span> <strong>${escapeHtml(book.kategori)}</strong></li>
+                                </ul>
+                            </div>
+
+                            <!-- Inventaris -->
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider border-b border-nest-border/60 pb-1">Informasi Inventaris</h4>
+                                <ul class="text-xs space-y-1.5 text-nest-text">
+                                    <li><span class="text-nest-muted">Jumlah Eksemplar:</span> <strong>${book.jumlahEksemplar} Salinan</strong></li>
+                                    <li><span class="text-nest-muted">Lokasi Rak:</span> <strong>${escapeHtml(book.lokasiRak)}</strong></li>
+                                    <li><span class="text-nest-muted">Kondisi Fisik:</span> <strong>${book.kondisi}</strong></li>
+                                    <li><span class="text-nest-muted">Status Koleksi:</span> <strong>${book.status}</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Deskripsi -->
+                        <div>
+                            <h4 class="text-xs font-bold text-nest-warm uppercase tracking-wider mb-2">Deskripsi Ringkas</h4>
+                            <p class="text-sm text-nest-muted leading-relaxed">${escapeHtml(book.deskripsi || 'Tidak ada deskripsi tambahan untuk buku ini.')}</p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="pt-4 border-t border-nest-border flex items-center justify-end gap-3">
+                            <button onclick="openFormModal('edit', '${book.id}')" class="px-4 py-2 bg-nest-secondary hover:bg-nest-warm text-white rounded-lg text-xs font-semibold shadow flex items-center gap-2 transition">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit Buku
+                            </button>
+                            <button onclick="openDeleteModal('${book.id}', '${escapeHtml(book.judul)}')" class="px-4 py-2 bg-nest-danger hover:bg-red-700 text-white rounded-lg text-xs font-semibold shadow flex items-center gap-2 transition">
+                                <i class="fa-solid fa-trash-can"></i> Hapus Buku
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            switchView('detail');
+        }
+
+        function openFormModal(mode, bookId = null) {
+            const modal = document.getElementById('bookFormModal');
+            const form = document.getElementById('bookForm');
+            const titleEl = document.getElementById('formModalTitle');
+
+            form.reset();
+            populateCategoryDropdowns();
+
+            if (mode === 'edit' && bookId) {
+                const book = books.find(b => b.id === bookId);
+                if (!book) return;
+
+                titleEl.textContent = 'Edit Data Buku';
+                document.getElementById('bookId').value = book.id;
+                document.getElementById('inputJudul').value = book.judul;
+                document.getElementById('inputPenulis').value = book.penulis;
+                document.getElementById('inputISBN').value = book.isbn;
+                document.getElementById('inputPenerbit').value = book.penerbit;
+                document.getElementById('inputTahunTerbit').value = book.tahunTerbit;
+                document.getElementById('inputKategori').value = book.kategori;
+                document.getElementById('inputJumlahEksemplar').value = book.jumlahEksemplar;
+                document.getElementById('inputLokasiRak').value = book.lokasiRak;
+                document.getElementById('inputKondisi').value = book.kondisi;
+                document.getElementById('inputStatus').value = book.status;
+                document.getElementById('inputDeskripsi').value = book.deskripsi || '';
+                document.getElementById('inputCover').value = book.cover || '';
+            } else {
+                titleEl.textContent = 'Tambah Buku Baru';
+                document.getElementById('bookId').value = '';
+                document.getElementById('inputKondisi').value = 'Baik';
+                document.getElementById('inputStatus').value = 'Tersedia';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeFormModal() {
+            document.getElementById('bookFormModal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('bookId').value;
+            const judul = document.getElementById('inputJudul').value.trim();
+            const penulis = document.getElementById('inputPenulis').value.trim();
+            const isbn = document.getElementById('inputISBN').value.trim();
+            const penerbit = document.getElementById('inputPenerbit').value.trim();
+            const tahunTerbit = parseInt(document.getElementById('inputTahunTerbit').value);
+            const kategori = document.getElementById('inputKategori').value;
+            const jumlahEksemplar = parseInt(document.getElementById('inputJumlahEksemplar').value);
+            const lokasiRak = document.getElementById('inputLokasiRak').value.trim();
+            const kondisi = document.getElementById('inputKondisi').value;
+            const status = document.getElementById('inputStatus').value;
+            const deskripsi = document.getElementById('inputDeskripsi').value.trim();
+            let cover = document.getElementById('inputCover').value.trim();
+
+            if (!cover) {
+                cover = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80';
+            }
+
+            const now = new Date().toISOString();
+
+            if (id) {
+                // Update
+                const index = books.findIndex(b => b.id === id);
+                if (index !== -1) {
+                    books[index] = {
+                        ...books[index],
+                        judul, penulis, isbn, penerbit, tahunTerbit,
+                        kategori, jumlahEksemplar, lokasiRak, kondisi, status,
+                        deskripsi, cover, updatedAt: now
+                    };
+                    showToast('Buku berhasil diperbarui!');
+                }
+            } else {
+                // Create
+                const newBook = {
+                    id: 'bk-' + Date.now(),
+                    judul, penulis, isbn, penerbit, tahunTerbit,
+                    kategori, jumlahEksemplar, lokasiRak, kondisi, status,
+                    deskripsi, cover, createdAt: now, updatedAt: now
+                };
+                books.unshift(newBook);
+                showToast('Buku baru berhasil ditambahkan!');
+            }
+
+            saveBooks();
+            closeFormModal();
+            
+            // Redirect to koleksi view
+            switchView('koleksi');
+        }
+
+        function openDeleteModal(id, title) {
+            pendingDeleteId = id;
+            document.getElementById('deleteBookTitle').textContent = `"${title}"`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+
+            document.getElementById('confirmDeleteBtn').onclick = () => {
+                if (pendingDeleteId) {
+                    books = books.filter(b => b.id !== pendingDeleteId);
+                    saveBooks();
+                    closeDeleteModal();
+                    showToast('Buku telah dihapus dari koleksi.', 'danger');
+                    switchView('koleksi');
+                }
+            };
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        function renderCategoriesTable() {
+            const tbody = document.getElementById('categoryTableBody');
+            tbody.innerHTML = categories.map(cat => {
+                const count = books.filter(b => b.kategori === cat).length;
+                return `
+                    <tr class="hover:bg-nest-bg/60 transition border-b border-nest-border/40">
+                        <td class="p-4 font-bold text-nest-dark flex items-center gap-2">
+                            <i class="fa-solid fa-folder text-nest-gold"></i> ${escapeHtml(cat)}
+                        </td>
+                        <td class="p-4 text-center font-semibold text-nest-warm">${count} Judul</td>
+                        <td class="p-4 text-right">
+                            <button onclick="deleteCategory('${escapeHtml(cat)}')" ${count > 0 ? 'disabled title="Kategori masih digunakan oleh buku"' : ''} class="text-xs text-nest-muted hover:text-nest-danger ${count > 0 ? 'opacity-40 cursor-not-allowed' : ''}">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openCategoryModal() {
+            document.getElementById('newCategoryName').value = '';
+            document.getElementById('categoryModal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function handleCategorySubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('newCategoryName').value.trim();
+            if (name && !categories.includes(name)) {
+                categories.push(name);
+                saveCategories();
+                populateCategoryDropdowns();
+                renderCategoriesTable();
+                closeCategoryModal();
+                showToast('Kategori baru berhasil ditambahkan!');
+            }
+        }
+
+        function deleteCategory(catName) {
+            const count = books.filter(b => b.kategori === catName).length;
+            if (count > 0) return;
+
+            if (confirm(`Hapus kategori "${catName}"?`)) {
+                categories = categories.filter(c => c !== catName);
+                saveCategories();
+                populateCategoryDropdowns();
+                renderCategoriesTable();
+                showToast('Kategori telah dihapus.');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+
+            if (type === 'danger') {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-xl max-w-sm bg-nest-danger';
+                iconEl.className = 'fa-solid fa-circle-xmark text-lg';
+            } else if (type === 'info') {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-xl max-w-sm bg-nest-secondary';
+                iconEl.className = 'fa-solid fa-circle-info text-lg';
+            } else {
+                toast.className = 'fixed bottom-5 right-5 z-50 transform transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-lg text-white shadow-xl max-w-sm bg-nest-olive';
+                iconEl.className = 'fa-solid fa-circle-check text-lg';
+            }
+
+            // Slide in
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        // Initialize on Window Load
+        window.onload = function() {
+            initApp();
+            switchView('dashboard');
+        };
+    </script>
+</body>
+</html>
