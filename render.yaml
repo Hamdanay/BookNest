@@ -1,0 +1,12 @@
+# API BookNest (SQLite) — deploy di Render, lalu set VITE_API_URL di Vercel.
+services:
+  - type: web
+    name: booknest-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production

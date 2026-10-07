@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { db, uploadsDir } from './db.js';
 import booksRouter from './routes/books.js';
 import categoriesRouter from './routes/categories.js';
@@ -17,7 +19,21 @@ if (bookCount === 0) {
   seedDatabase(false);
 }
 
-app.use(cors());
+function corsOrigin(origin, callback) {
+  if (!origin) return callback(null, true);
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    return callback(null, true);
+  }
+  if (origin.endsWith('.vercel.app')) return callback(null, true);
+  const allowed = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (allowed.includes(origin)) return callback(null, true);
+  return callback(new Error('CORS tidak diizinkan untuk origin ini'));
+}
+
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(uploadsDir));
 
@@ -68,16 +84,23 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Terjadi kesalahan server' });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`BookNest API berjalan di http://localhost:${PORT}`);
-});
+export default app;
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(
-      `Port ${PORT} sudah dipakai. Tutup server BookNest yang masih berjalan, atau gunakan port lain: $env:PORT=3003; npm run dev`
-    );
-    process.exit(1);
-  }
-  throw err;
-});
+const modulePath = fileURLToPath(import.meta.url);
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === modulePath;
+
+if (isMain) {
+  const server = app.listen(PORT, () => {
+    console.log(`BookNest API berjalan di http://localhost:${PORT}`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(
+        `Port ${PORT} sudah dipakai. Tutup server BookNest yang masih berjalan, atau gunakan port lain: $env:PORT=3003; npm run dev`
+      );
+      process.exit(1);
+    }
+    throw err;
+  });
+}

@@ -1,7 +1,7 @@
-const API_BASE = '';
+import { apiUrl } from '../lib/apiBase.js';
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(apiUrl(path), {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   });
@@ -47,7 +47,7 @@ export const api = {
   uploadCover: async (file) => {
     const form = new FormData();
     form.append('cover', file);
-    const res = await fetch('/api/upload/cover', { method: 'POST', body: form });
+    const res = await fetch(apiUrl('/api/upload/cover'), { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Upload gagal');
     return data.url;

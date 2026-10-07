@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiUrl } from '../lib/apiBase.js';
 
 const THEMES = {
   'Filosofi Teras': { bg: '#C45C26', fg: '#F8E6D4', accent: '#F0C27A', motif: 'teras' },
@@ -70,12 +71,13 @@ function Motif({ motif, accent }) {
 
 export default function CoverImage({ judul = 'BookNest', penulis = '', cover = '', className = '', alt }) {
   const [failed, setFailed] = useState(false);
+  const src = cover ? apiUrl(cover) : '';
   const hasFile = Boolean(cover && (cover.startsWith('http') || cover.startsWith('/uploads')));
 
   if (hasFile && !failed) {
     return (
       <img
-        src={cover}
+        src={src}
         alt={alt || judul}
         className={className}
         onError={() => setFailed(true)}

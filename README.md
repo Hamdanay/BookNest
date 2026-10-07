@@ -75,6 +75,39 @@ cd ../frontend
 npm test
 ```
 
+## Deploy (publik di internet)
+
+`localhost` hanya bisa dibuka di komputer kamu. Supaya orang lain bisa lihat:
+
+| Bagian | Platform | Alasan |
+|--------|----------|--------|
+| **Frontend** (React) | [Vercel](https://vercel.com) | Cocok untuk Vite/static |
+| **Backend** (Express + SQLite) | [Render](https://render.com) | Butuh proses Node + penyimpanan file; tidak cocok di Vercel serverless |
+
+### 1. API di Render
+
+1. Buka [dashboard Render](https://dashboard.render.com) → **New** → **Blueprint** (atau Web Service dari repo GitHub).
+2. Pilih repo **Hamdanay/BookNest** — file `render.yaml` sudah mengarah ke folder `backend`.
+3. Setelah deploy, catat URL API, misalnya `https://booknest-api.onrender.com`.
+4. Di service Render → **Environment**, tambahkan `FRONTEND_URL` = URL Vercel kamu (setelah langkah 2).
+
+Catatan: plan gratis Render bisa sleep; pertama buka mungkin lambat ±1 menit.
+
+### 2. UI di Vercel
+
+1. [vercel.com](https://vercel.com) → **Add New Project** → import **BookNest** dari GitHub.
+2. **Root Directory**: `frontend`
+3. **Environment Variables**: `VITE_API_URL` = URL Render (tanpa slash di akhir), contoh `https://booknest-api.onrender.com`
+4. Deploy.
+
+Atau lewat CLI (dari folder `frontend`):
+
+```bash
+npx vercel --prod
+```
+
+Set `VITE_API_URL` di Project Settings → Environment Variables, lalu **Redeploy**.
+
 ## Skema warna
 
 Primary `#3E2A21`, Secondary `#5B3A2A`, Background `#F8F3EE`, Accent `#C99A5A` — sesuai spesifikasi BookNest, dengan UI bertema hutan untuk tampilan modern.
