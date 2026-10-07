@@ -1,13 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm install --prefix backend && npm install --prefix frontend",
+  "installCommand": "npm install && npm install --prefix backend && npm install --prefix frontend",
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.js": {
       "memory": 1024,
       "maxDuration": 30,
-      "includeFiles": "backend/**"
+      "includeFiles": "{backend/**,node_modules/better-sqlite3/**}"
     }
   },
   "rewrites": [

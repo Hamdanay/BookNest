@@ -55,8 +55,22 @@ export default function Dashboard() {
       <div className="elf-folio p-6 space-y-3 max-w-lg">
         <h2 className="font-display text-lg font-semibold text-folio-ink">Tidak dapat memuat data</h2>
         <p className="text-sm text-folio-muted leading-relaxed">
-          Pastikan backend BookNest berjalan di <strong className="text-folio-ink">http://localhost:3002</strong>, lalu
-          refresh halaman ini.
+          {import.meta.env.DEV ? (
+            <>
+              Pastikan backend BookNest berjalan di{' '}
+              <strong className="text-folio-ink">http://localhost:3002</strong>, lalu refresh halaman ini.
+            </>
+          ) : (
+            <>
+              API tidak merespons. Cek{' '}
+              <a href="/api/health" className="text-nest-gold underline underline-offset-2">
+                /api/health
+              </a>{' '}
+              di tab baru (harus JSON, bukan halaman ini). Jika error 500, lihat log <strong>Functions</strong> di
+              dashboard Vercel. Hapus env <code className="text-folio-ink">VITE_API_URL</code> jika masih mengarah ke
+              localhost.
+            </>
+          )}
         </p>
       </div>
     );

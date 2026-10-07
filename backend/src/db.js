@@ -5,7 +5,8 @@ import fs from 'fs';
 import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const onVercel = process.env.VERCEL === '1';
+/** Vercel set VERCEL=1; tanpa /tmp, SQLite di folder deploy (read-only) → function crash. */
+const onVercel = Boolean(process.env.VERCEL);
 
 /** Di Vercel filesystem hanya /tmp yang bisa ditulis (serverless). */
 const dataDir = onVercel
