@@ -77,36 +77,69 @@ npm test
 
 ## Deploy (publik di internet)
 
-`localhost` hanya bisa dibuka di komputer kamu. Supaya orang lain bisa lihat:
+### Opsi A — Semua di Vercel (gratis, disarankan)
 
-| Bagian | Platform | Alasan |
-|--------|----------|--------|
-| **Frontend** (React) | [Vercel](https://vercel.com) | Cocok untuk Vite/static |
-| **Backend** (Express + SQLite) | [Render](https://render.com) | Butuh proses Node + penyimpanan file; tidak cocok di Vercel serverless |
+Frontend **dan** API Express jalan di satu project Vercel. Folder `api/index.js` mengekspor server Express; `vercel.json` di **root repo** mengarahkan `/api` dan `/uploads` ke function itu.
 
-### 1. API di Render
+**Penting:** deploy dari **root repositori**, bukan hanya folder `frontend`.
 
-1. Buka [dashboard Render](https://dashboard.render.com) → **New** → **Blueprint** (atau Web Service dari repo GitHub).
-2. Pilih repo **Hamdanay/BookNest** — file `render.yaml` sudah mengarah ke folder `backend`.
-3. Setelah deploy, catat URL API, misalnya `https://booknest-api.onrender.com`.
-4. Di service Render → **Environment**, tambahkan `FRONTEND_URL` = URL Vercel kamu (setelah langkah 2).
+#### Langkah di dashboard Vercel
 
-Catatan: plan gratis Render bisa sleep; pertama buka mungkin lambat ±1 menit.
+1. Buka [vercel.com](https://vercel.com) → project BookNest (atau **Add New** → import repo GitHub).
+2. **Settings → General → Root Directory** → kosongkan / set ke **`.`** (root repo).  
+   Jika sebelumnya `frontend`, ubah ke root lalu **Save**.
+3. **Environment Variables** — untuk pola same-origin **tidak wajib** set `VITE_API_URL` (biarkan kosong).
+4. **Deployments** → **Redeploy** (setelah push commit yang berisi `vercel.json` + `api/`).
 
-### 2. UI di Vercel
+Vercel akan memakai `installCommand` / `buildCommand` dari `vercel.json` (install `backend` + `frontend`, build Vite ke `frontend/dist`).
 
-1. [vercel.com](https://vercel.com) → **Add New Project** → import **BookNest** dari GitHub.
-2. **Root Directory**: `frontend`
-3. **Environment Variables**: `VITE_API_URL` = URL Render (tanpa slash di akhir), contoh `https://booknest-api.onrender.com`
-4. Deploy.
-
-Atau lewat CLI (dari folder `frontend`):
+#### Langkah lewat CLI (dari root repo)
 
 ```bash
+cd BookNest   # folder root, bukan frontend
 npx vercel --prod
 ```
 
-Set `VITE_API_URL` di Project Settings → Environment Variables, lalu **Redeploy**.
+Saat ditanya root project, pastikan mengarah ke **root** (file `vercel.json` dan folder `api/` terlihat).
+
+#### Tes cepat setelah deploy
+
+- `https://<domain-kamu>/api/health` → harus `{"ok":true,...}`
+- `https://<domain-kamu>/` → UI + data buku (seed otomatis jika DB kosong)
+
+#### Batasan (serverless + SQLite di `/tmp`)
+
+| | |
+|---|---|
+| **Cocok untuk** | Demo portofolio, reviewer buka link langsung ada data |
+| **Database** | SQLite di `/tmp` pada Vercel — **bisa reset** saat cold start / instance baru |
+| **Upload cover** | File di `/tmp` — bisa hilang setelah idle; cover URL eksternal tetap aman |
+| **Lokal penuh** | Tetap `backend` + `frontend` di komputer — data persisten di `backend/data/` |
+
+Ini trade-off gratis di Vercel tanpa database cloud terpisah. Untuk data permanen di internet, pakai opsi B (Render) atau DB hosted (Turso/Neon) nanti.
+
+#### Coba mirip production di komputer
+
+```bash
+npx vercel dev
+```
+
+(Jalankan dari root repo; butuh login Vercel CLI.)
+
+---
+
+### Opsi B — Frontend Vercel + API Render (data lebih stabil)
+
+| Bagian | Platform |
+|--------|----------|
+| Frontend | Vercel, root `frontend` |
+| API + SQLite file | [Render](https://render.com) (`render.yaml`) |
+
+1. Deploy API dari `render.yaml`, catat URL API.
+2. Di Vercel (project frontend): `VITE_API_URL` = URL Render (tanpa `/` di akhir), redeploy.
+3. Di Render: `FRONTEND_URL` = URL Vercel kamu.
+
+Render gratis bisa sleep; verifikasi kartu sering diminta (bukan biaya bulanan wajib).
 
 ## Skema warna
 

@@ -2,10 +2,18 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', 'data');
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+const onVercel = process.env.VERCEL === '1';
+
+/** Di Vercel filesystem hanya /tmp yang bisa ditulis (serverless). */
+const dataDir = onVercel
+  ? path.join('/tmp', 'booknest', 'data')
+  : path.join(__dirname, '..', 'data');
+const uploadsDir = onVercel
+  ? path.join('/tmp', 'booknest', 'uploads')
+  : path.join(__dirname, '..', 'uploads');
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
