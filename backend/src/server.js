@@ -103,4 +103,26 @@ if (isMain) {
     }
     throw err;
   });
+
+  // Graceful Shutdown: Tutup koneksi database secara bersih saat kontainer dimatikan
+  function shutdown(signal) {
+    console.log(`\n[${signal}] Menutup server BookNest secara anggun (graceful shutdown)...`);
+    server.close(() => {
+      try {
+        db.close();
+        console.log('[DB CLOSED] Koneksi SQLite ditutup dengan aman.');
+      } catch (e) {
+        console.error('[DB CLOSE ERROR]', e);
+      }
+      process.exit(0);
+    });
+    // Batas waktu toleransi 5 detik sebelum dipaksa mati
+    setTimeout(() => {
+      console.error('[FORCE EXIT] Waktu tunggu habis, mematikan paksa.');
+      process.exit(1);
+    }, 5000).unref();
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }

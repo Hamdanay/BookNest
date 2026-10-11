@@ -1,0 +1,56 @@
+name: BookNest CI Pipeline
+
+# 1. Pemicu: Jalankan pipeline ini setiap kali ada push atau pull request ke branch main
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # TAHAP 1: Menjalankan Unit Testing Otomatis
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 3. Test Backend (Aturan ISBN & Inventaris)
+        run: |
+          cd backend
+          npm ci
+          npm test
+
+      - name: 4. Test Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm test
+
+  # TAHAP 2: Verifikasi Build Docker Image
+  build-docker:
+    name: Verify Docker Images Build
+    needs: test # Hanya berjalan jika tahap unit test di atas sukses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 3. Test Build Docker Backend
+        run: |
+          docker build -t booknest-backend:ci ./backend
+
+      - name: 4. Test Build Docker Frontend
+        run: |
+          docker build -t booknest-frontend:ci ./frontend

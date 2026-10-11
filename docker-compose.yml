@@ -1,0 +1,64 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: booknest-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+    volumes:
+      # Data SQLite dan uploads disimpan di Docker Volume agar tidak hilang saat container restart
+      - booknest-data:/app/data
+      - booknest-uploads:/app/uploads
+    logging:
+      # Mencegah disk penuh: Log dibatasi maksimal 10 MB per file, simpan 3 file rotasi
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      # Cek kesehatan API setiap 20 detik langsung ke endpoint /api/health
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - booknest-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: booknest-frontend
+    restart: unless-stopped
+    ports:
+      # Akses aplikasi lewat http://localhost:8080
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy # Frontend hanya jalan jika backend sudah terbukti sehat
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      # Cek kesehatan Web Server Nginx
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:80/ || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - booknest-net
+
+volumes:
+  booknest-data:
+  booknest-uploads:
+
+networks:
+  booknest-net:
+    driver: bridge
