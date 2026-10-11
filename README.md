@@ -59,7 +59,7 @@ Aplikasi ini telah dikontainerisasi penuh menggunakan **Docker Compose** dengan 
 
 ---
 
-## 🚀 Menjalankan Aplikasi (Metode Utama: Docker)
+## Menjalankan Aplikasi (Metode Utama: Docker)
 
 Pastikan **Docker Desktop** (atau Docker Engine di Linux) sudah berjalan.
 
@@ -87,7 +87,7 @@ docker compose down
 
 ---
 
-## 🛡️ Otomatisasi Backup & Disaster Recovery
+## Otomatisasi Backup & Disaster Recovery
 
 Untuk menjamin kelangsungan operasional dan mencegah kehilangan data, proyek ini dilengkapi sistem pemeliharaan otomatis:
 
@@ -126,7 +126,7 @@ Skrip akan otomatis mengambil file backup terbaru, membersihkan residu WAL/SHM l
 
 ---
 
-## 🔄 CI/CD Pipeline (GitHub Actions)
+## CI/CD Pipeline (GitHub Actions)
 
 Setiap ada perubahan kode yang di-*push* ke branch `main`, pipeline [`.github/workflows/ci.yml`](.github/workflows/ci.yml) otomatis menjalankan:
 1. **Automated Unit Testing:**
@@ -137,7 +137,7 @@ Setiap ada perubahan kode yang di-*push* ke branch `main`, pipeline [`.github/wo
 
 ---
 
-## 📋 Aturan Bisnis & Integritas Data
+## Aturan Bisnis & Integritas Data
 
 * **ISBN:** Wajib 10 atau 13 digit dengan angka periksa valid, unik di seluruh koleksi.
 * **Kondisi & Status Terkunci:**
@@ -148,7 +148,7 @@ Setiap ada perubahan kode yang di-*push* ke branch `main`, pipeline [`.github/wo
 
 ---
 
-## 🛠️ Alternatif: Menjalankan Tanpa Docker (Development Lokal)
+## Alternatif: Menjalankan Tanpa Docker (Development Lokal)
 
 Jika ingin menjalankan kode secara manual untuk keperluan modifikasi cepat:
 
