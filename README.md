@@ -1,146 +1,186 @@
 # BookNest — Manajemen Koleksi Buku
 
-Alat administrasi lokal untuk mengelola koleksi dan inventaris buku: bibliografi, eksemplar, kondisi, lokasi rak, kategori, status, dan riwayat perubahan. Bukan toko, bukan sistem peminjaman — tanpa harga, keranjang, checkout, atau penjualan.
+[![BookNest CI Pipeline](https://github.com/Hamdanay/BookNest/actions/workflows/ci.yml/badge.svg)](https://github.com/Hamdanay/BookNest/actions/workflows/ci.yml)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
+![Nginx](https://img.shields.io/badge/Reverse_Proxy-Nginx-009639?logo=nginx)
+![SQLite](https://img.shields.io/badge/Database-SQLite_WAL-003B57?logo=sqlite)
+![Node.js](https://img.shields.io/badge/Backend-Node.js_20-339933?logo=node.js)
+![React](https://img.shields.io/badge/Frontend-React_18-61DAFB?logo=react)
 
-Aplikasi ini dirancang untuk dijalankan di komputer sendiri (admin lokal). Tombol reset data sampel hanya muncul di lingkungan non-production.
+Sistem administrasi dan inventaris koleksi buku lokal/internal: bibliografi lengkap, pelacakan eksemplar, kondisi fisik, pemetaan rak, kategori, status ketersediaan, serta riwayat audit perubahan (*audit trail*).
 
-## Struktur proyek
+> **Fokus Utama:** Manajemen inventaris fisik murni (bukan toko online, tanpa keranjang/checkout/harga) dengan arsitektur infrastruktur siap produksi, kontainerisasi mandiri, perlindungan integritas database, dan otomatisasi *Disaster Recovery*.
 
-| Folder | Peran |
-|--------|--------|
-| `booknest_manajemen_koleksi_buku.html` | Prototipe UI statis (referensi desain) |
-| `backend/` | REST API (Node.js + Express + SQLite) |
-| `frontend/` | UI React + Vite + Tailwind (terhubung ke API) |
+---
 
-## Menjalankan aplikasi
+## 🏗️ Arsitektur Infrastruktur
 
-Jalankan backend dan frontend bersamaan.
+Aplikasi ini telah dikontainerisasi penuh menggunakan **Docker Compose** dengan pemisahan tanggung jawab yang terisolasi dan aman di dalam jaringan internal:
 
-### 1. Backend
+```
+[ Browser Klien ]
+       │
+       ▼ (Port Publik: 8080)
+┌─────────────────────────────────────────────────────────────┐
+│ Docker Network: booknest-net                                │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │ booknest-frontend (Nginx Alpine - RAM: ~6.8 MB)       │  │
+│  │ ───────────────────────────────────────────────────   │  │
+│  │  • Menyajikan berkas statis React SPA (HTML/CSS/JS)   │  │
+│  │  • Reverse Proxy: Meneruskan /api/ dan /uploads/      │  │
+│  │  • Healthcheck: Wget probe internal setiap 20 detik   │  │
+│  └──────────────────────────┬────────────────────────────┘  │
+│                             │ (Jaringan Privat: Port 3002)  │
+│                             ▼                               │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │ booknest-backend (Node.js 20 Slim - RAM: ~14 MB)      │  │
+│  │ ───────────────────────────────────────────────────   │  │
+│  │  • REST API Express.js (Mode Produksi)                │  │
+│  │  • Engine SQLite (WAL Mode) via better-sqlite3        │  │
+│  │  • Graceful Shutdown Handler (SIGTERM / SIGINT)       │  │
+│  │  • Healthcheck: Node fetch probe ke /api/health       │  │
+│  └──────────────────────────┬────────────────────────────┘  │
+│                             │                               │
+└─────────────────────────────┼───────────────────────────────┘
+                              ▼
+            ┌───────────────────────────────────┐
+            │ Persistent Docker Named Volumes   │
+            │  • booknest-data    (SQLite DB)   │
+            │  • booknest-uploads (Sampul Buku) │
+            └───────────────────────────────────┘
+```
 
+### Keunggulan Arsitektur:
+* **Hemat Sumber Daya (Ultra-Lightweight):** Total penggunaan RAM seluruh kontainer hanya **~20 MB** (Nginx: ~6.8 MB, Node: ~14 MB).
+* **Gerbang Tunggal (Reverse Proxy):** Pengguna hanya mengakses port `8080`. Port backend `3002` terkunci di jaringan internal, menghilangkan *CORS issue* sepenuhnya.
+* **Orkestrasi Sehat (`service_healthy`):** Frontend hanya diizinkan aktif setelah kontainer Backend terbukti lolos uji kesehatan (*Health Check*).
+* **Perlindungan Disk:** Rotasi log kontainer dibatasi maksimal 10 MB (`max-size: 10m`) agar penyimpanan server tidak habis.
+
+---
+
+## 🚀 Menjalankan Aplikasi (Metode Utama: Docker)
+
+Pastikan **Docker Desktop** (atau Docker Engine di Linux) sudah berjalan.
+
+### 1. Nyalakan Seluruh Sistem
+Di root repositori, jalankan:
+```bash
+docker compose up -d
+```
+
+Buka di browser:
+* **Aplikasi BookNest:** [http://localhost:8080](http://localhost:8080)
+* **Status Kesehatan API:** [http://localhost:8080/api/health](http://localhost:8080/api/health)
+
+### 2. Memeriksa Status Kontainer
+```bash
+docker compose ps
+```
+Kedua kontainer akan berstatus **`Up (healthy)`**.
+
+### 3. Mematikan Sistem
+```bash
+docker compose down
+```
+*(Seluruh data buku dan sampul tetap tersimpan aman di Docker Named Volume).*
+
+---
+
+## 🛡️ Otomatisasi Backup & Disaster Recovery
+
+Untuk menjamin kelangsungan operasional dan mencegah kehilangan data, proyek ini dilengkapi sistem pemeliharaan otomatis:
+
+### 1. Online Snapshot & Integrity Check (`backup.ps1` / `backup.sh`)
+* **Pencegahan Silent Corruption:** Menjalankan `PRAGMA integrity_check` sebelum backup. Jika ada kerusakan struktur, backup otomatis dibatalkan (*ABORT*) agar tidak menyalin data korup.
+* **Zero-Downtime Snapshot:** Memanfaatkan **SQLite Online Backup API** (`db.backup()`) untuk menyalin data tingkat memori secara konsisten tanpa mematikan aplikasi web.
+* **Kebijakan Retensi (7 Hari):** Otomatis mendeteksi dan menghapus berkas backup lama yang berusia lebih dari 7 hari agar disk tetap lega.
+
+**Cara Eksekusi Manual:**
+* **Windows (PowerShell):**
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\backup.ps1
+  ```
+* **Linux (Bash):**
+  ```bash
+  bash scripts/backup.sh
+  ```
+*(Hasil backup tersimpan di folder `backups/booknest_backup_YYYYMMDD_HHMMSS.db`).*
+
+### 2. Pemulihan Bencana / Restore Instan (`restore.ps1` / `restore.sh`)
+Jika terjadi kerusakan fatal atau data tidak sengaja terhapus, sistem dapat dipulihkan dalam **~3 detik**:
+
+* **Windows (PowerShell):**
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\restore.ps1
+  ```
+* **Linux (Bash):**
+  ```bash
+  bash scripts/restore.sh
+  ```
+Skrip akan otomatis mengambil file backup terbaru, membersihkan residu WAL/SHM lama, menyuntikkan database yang sehat, me-restart backend, dan memverifikasi kesehatan endpoint `/api/health`.
+
+### 3. Penjadwalan Otomatis
+* **Linux (Crontab):** Tambahkan `0 2 * * * /bin/bash /path/to/scripts/backup.sh` untuk backup harian jam 02:00 pagi.
+* **Windows (Task Scheduler):** Daftarkan `scripts/backup.ps1` sebagai tugas harian terjadwal.
+
+---
+
+## 🔄 CI/CD Pipeline (GitHub Actions)
+
+Setiap ada perubahan kode yang di-*push* ke branch `main`, pipeline [`.github/workflows/ci.yml`](.github/workflows/ci.yml) otomatis menjalankan:
+1. **Automated Unit Testing:**
+   * Pengujian validasi checksum matematis ISBN-10 dan ISBN-13.
+   * Pengujian logika aturan inventaris (sinkronisasi kondisi fisik vs status ketersediaan).
+2. **Container Build Verification:**
+   * Memverifikasi keberhasilan *multi-stage build* backend dan frontend di mesin virtual Ubuntu GitHub Runner.
+
+---
+
+## 📋 Aturan Bisnis & Integritas Data
+
+* **ISBN:** Wajib 10 atau 13 digit dengan angka periksa valid, unik di seluruh koleksi.
+* **Kondisi & Status Terkunci:**
+  * *Rusak Berat* dilarang berstatus *Tersedia*.
+  * *Baik* dilarang berstatus *Sebagian Rusak*.
+* **Sinkronisasi Rak Otomatis:** Input lokasi rak baru pada form buku otomatis dicatat ke master data rak.
+* **Audit Trail (Riwayat Perubahan):** Setiap penambahan dan modifikasi buku dicatat secara mendalam per atribut di tabel `book_history`.
+
+---
+
+## 🛠️ Alternatif: Menjalankan Tanpa Docker (Development Lokal)
+
+Jika ingin menjalankan kode secara manual untuk keperluan modifikasi cepat:
+
+### Backend
 ```bash
 cd backend
 npm install
 npm run dev
 ```
+API berjalan di `http://localhost:3002`.
 
-API: `http://localhost:3002` (bisa diubah lewat variabel `PORT`)  
-Database: `backend/data/booknest.db` (otomatis di-seed saat pertama kali kosong).
-
-Reset data sampel (hanya jika `NODE_ENV` bukan `production`):
-
-```bash
-cd backend
-npm run seed -- --force
-```
-
-Atau lewat UI: **Pulihkan data sampel**.
-
-### 2. Frontend
-
+### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+UI berjalan di `http://localhost:5173`.
 
-Buka: `http://localhost:5173`
-
-## Aturan data
-
-- **ISBN** harus 10 atau 13 digit, dengan angka periksa yang valid, dan unik di seluruh koleksi.
-- **Kondisi / status** saling mengunci, misalnya Rusak Berat tidak bisa Tersedia; Baik tidak bisa Sebagian Rusak.
-- **Rak** adalah master data. Nama rak baru dari form buku otomatis tercatat.
-- Setiap create/update buku dicatat di **riwayat perubahan**.
-
-## Endpoint API utama
-
-- `GET /api/books` — daftar paginasi `{ items, total, page, pageSize, pageCount }` (`search`, `kategori`, `kondisi`, `status`, `sort`, `page`, `pageSize`)
-- `GET /api/books/:id/history` — riwayat perubahan
-- `GET/POST/PUT/DELETE /api/books/:id`
-- `GET/POST/PUT/DELETE /api/categories`
-- `GET/POST/PUT/DELETE /api/racks`
-- `GET /api/dashboard/stats`
-- `GET /api/meta` — termasuk `allowSeedReset`
-- `POST /api/upload/cover` — unggah gambar sampul
-- `POST /api/seed/reset` — kembalikan data sampel (ditolak jika `NODE_ENV=production`)
-
-## Tes
-
+### Pengujian Lokal
 ```bash
-cd backend
-npm test
-
-cd ../frontend
-npm test
+cd backend && npm test
+cd ../frontend && npm test
 ```
-
-## Deploy (publik di internet)
-
-### Opsi A — Semua di Vercel (gratis, disarankan)
-
-Frontend **dan** API Express jalan di satu project Vercel. Folder `api/index.js` mengekspor server Express; `vercel.json` di **root repo** mengarahkan `/api` dan `/uploads` ke function itu.
-
-**Penting:** deploy dari **root repositori**, bukan hanya folder `frontend`.
-
-#### Langkah di dashboard Vercel
-
-1. Buka [vercel.com](https://vercel.com) → project BookNest (atau **Add New** → import repo GitHub).
-2. **Settings → General → Root Directory** → kosongkan / set ke **`.`** (root repo).  
-   Jika sebelumnya `frontend`, ubah ke root lalu **Save**.
-3. **Environment Variables** — untuk pola same-origin **tidak wajib** set `VITE_API_URL` (biarkan kosong).
-4. **Deployments** → **Redeploy** (setelah push commit yang berisi `vercel.json` + `api/`).
-
-Vercel akan memakai `installCommand` / `buildCommand` dari `vercel.json` (install `backend` + `frontend`, build Vite ke `frontend/dist`).
-
-#### Langkah lewat CLI (dari root repo)
-
-```bash
-cd BookNest   # folder root, bukan frontend
-npx vercel --prod
-```
-
-Saat ditanya root project, pastikan mengarah ke **root** (file `vercel.json` dan folder `api/` terlihat).
-
-#### Tes cepat setelah deploy
-
-- `https://<domain-kamu>/api/health` → harus `{"ok":true,...}`
-- `https://<domain-kamu>/` → UI + data buku (seed otomatis jika DB kosong)
-
-#### Batasan (serverless + SQLite di `/tmp`)
-
-| | |
-|---|---|
-| **Cocok untuk** | Demo portofolio, reviewer buka link langsung ada data |
-| **Database** | SQLite di `/tmp` pada Vercel — **bisa reset** saat cold start / instance baru |
-| **Upload cover** | File di `/tmp` — bisa hilang setelah idle; cover URL eksternal tetap aman |
-| **Lokal penuh** | Tetap `backend` + `frontend` di komputer — data persisten di `backend/data/` |
-
-Ini trade-off gratis di Vercel tanpa database cloud terpisah. Untuk data permanen di internet, pakai opsi B (Render) atau DB hosted (Turso/Neon) nanti.
-
-#### Coba mirip production di komputer
-
-```bash
-npx vercel dev
-```
-
-(Jalankan dari root repo; butuh login Vercel CLI.)
 
 ---
 
-### Opsi B — Frontend Vercel + API Render (data lebih stabil)
+## 🎨 Desain & Tema Visual
 
-| Bagian | Platform |
-|--------|----------|
-| Frontend | Vercel, root `frontend` |
-| API + SQLite file | [Render](https://render.com) (`render.yaml`) |
-
-1. Deploy API dari `render.yaml`, catat URL API.
-2. Di Vercel (project frontend): `VITE_API_URL` = URL Render (tanpa `/` di akhir), redeploy.
-3. Di Render: `FRONTEND_URL` = URL Vercel kamu.
-
-Render gratis bisa sleep; verifikasi kartu sering diminta (bukan biaya bulanan wajib).
-
-## Skema warna
-
-Primary `#3E2A21`, Secondary `#5B3A2A`, Background `#F8F3EE`, Accent `#C99A5A` — sesuai spesifikasi BookNest, dengan UI bertema hutan untuk tampilan modern.
+Antarmuka mengusung tema **Woodland / Vintage Folio** yang elegan dengan palet warna bumi:
+* Primary: `#3E2A21`
+* Secondary: `#5B3A2A`
+* Background: `#F8F3EE`
+* Accent Gold: `#C99A5A`
+* Olive Green: `#6C7A5A`
