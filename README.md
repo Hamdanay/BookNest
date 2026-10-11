@@ -13,7 +13,7 @@ Sistem administrasi dan inventaris koleksi buku lokal/internal: bibliografi leng
 
 ---
 
-## 🏗️ Arsitektur Infrastruktur
+## Arsitektur Infrastruktur
 
 Aplikasi ini telah dikontainerisasi penuh menggunakan **Docker Compose** dengan pemisahan tanggung jawab yang terisolasi dan aman di dalam jaringan internal:
 
