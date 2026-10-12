@@ -4,6 +4,8 @@ backend/uploads/
 frontend/dist/
 *.db
 .env
+scripts/.backup.env
+*.env.local
 .DS_Store
 Thumbs.db
 *.log

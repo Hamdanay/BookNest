@@ -11,8 +11,11 @@ RUN npm ci --omit=dev || npm install --omit=dev
 # Salin seluruh kode backend
 COPY . .
 
-# Buat folder data dan uploads jika belum ada
-RUN mkdir -p data uploads
+# Buat folder data dan uploads jika belum ada, dan alihkan kepemilikan ke user 'node'
+RUN mkdir -p data uploads && chown -R node:node /app
+
+# DevSecOps Hardening: Jalankan aplikasi menggunakan user 'node' (non-root) untuk keamanan
+USER node
 
 EXPOSE 3002
 

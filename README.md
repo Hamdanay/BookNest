@@ -91,10 +91,11 @@ docker compose down
 
 Untuk menjamin kelangsungan operasional dan mencegah kehilangan data, proyek ini dilengkapi sistem pemeliharaan otomatis:
 
-### 1. Online Snapshot & Integrity Check (`backup.ps1` / `backup.sh`)
+### 1. Online Snapshot, Integrity Check & Off-site Cloud Backup (`backup.ps1` / `backup.sh`)
 * **Pencegahan Silent Corruption:** Menjalankan `PRAGMA integrity_check` sebelum backup. Jika ada kerusakan struktur, backup otomatis dibatalkan (*ABORT*) agar tidak menyalin data korup.
 * **Zero-Downtime Snapshot:** Memanfaatkan **SQLite Online Backup API** (`db.backup()`) untuk menyalin data tingkat memori secara konsisten tanpa mematikan aplikasi web.
 * **Kebijakan Retensi (7 Hari):** Otomatis mendeteksi dan menghapus berkas backup lama yang berusia lebih dari 7 hari agar disk tetap lega.
+* **Off-site Cloud Redundancy (Standar 3-2-1):** Selain tersimpan lokal di `backups/`, skrip otomatis mengunggah berkas fisik `.db` sebagai dokumen lampiran ke **Telegram Cloud Bot**, memastikan data tetap aman meskipun harddisk laptop rusak.
 
 **Cara Eksekusi Manual:**
 * **Windows (PowerShell):**
@@ -129,9 +130,10 @@ Skrip akan otomatis mengambil file backup terbaru, membersihkan residu WAL/SHM l
 ## CI/CD Pipeline (GitHub Actions)
 
 Setiap ada perubahan kode yang di-*push* ke branch `main`, pipeline [`.github/workflows/ci.yml`](.github/workflows/ci.yml) otomatis menjalankan:
-1. **Automated Unit Testing:**
-   * Pengujian validasi checksum matematis ISBN-10 dan ISBN-13.
-   * Pengujian logika aturan inventaris (sinkronisasi kondisi fisik vs status ketersediaan).
+1. **Automated Unit & Integration Testing (18 Tests):**
+   * **API Integration Tests (Supertest):** Menguji langsung endpoint HTTP Express nyata (`/api/health`, `/api/meta`, `/api/books`, `/api/categories`, `/api/racks`, `/api/dashboard/stats`, serta penanganan error 404 & 400).
+   * **Domain Business Logic:** Validasi rumus checksum matematis ISBN-10 dan ISBN-13.
+   * **Inventory Integrity:** Pengujian logika sinkronisasi kondisi fisik vs status ketersediaan buku.
 2. **Container Build Verification:**
    * Memverifikasi keberhasilan *multi-stage build* backend dan frontend di mesin virtual Ubuntu GitHub Runner.
 
