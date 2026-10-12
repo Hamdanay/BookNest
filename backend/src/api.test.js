@@ -7,7 +7,7 @@ test('Integration Test: GET /api/health mengembalikan status 200 dan format ok',
   const res = await request(app).get('/api/health');
   assert.equal(res.status, 200);
   assert.equal(res.body.ok, true);
-  assert.equal(res.body.service, 'BookNest API');
+  assert.equal(res.body.service, 'BookNest Rusak');
 });
 
 test('Integration Test: GET /api/meta mengembalikan metadata layanan', async () => {
