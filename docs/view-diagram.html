@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>BookNest Architecture Diagram (1200px Export)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 30px;
+      background: #090d16;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #e2e8f0;
+    }
+    .header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #1d4ed8; }
+    #diagram-container {
+      width: 1200px;
+      max-width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    img { width: 100%; height: auto; display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>BookNest - System Architecture Diagram (1200px)</h2>
+    <p style="color: #94a3b8; font-size: 14px;">Klik tombol di bawah untuk langsung mengunduh gambar PNG (1200x675px) resolusi tinggi untuk portofolio:</p>
+    <button class="btn" onclick="downloadPNG()">📥 Download sebagai PNG (1200px)</button>
+  </div>
+
+  <div id="diagram-container">
+    <img id="svg-img" src="architecture-diagram.svg" alt="BookNest System Architecture">
+  </div>
+
+  <canvas id="canvas" width="1200" height="675" style="display:none;"></canvas>
+
+  <script>
+    function downloadPNG() {
+      const img = document.getElementById('svg-img');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.src = 'architecture-diagram.svg';
+      image.onload = function() {
+        ctx.drawImage(image, 0, 0, 1200, 675);
+        const a = document.createElement('a');
+        a.download = 'booknest-architecture-1200px.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      };
+    }
+  </script>
+</body>
+</html>

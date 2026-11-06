@@ -55,9 +55,72 @@ services:
     networks:
       - booknest-net
 
+  # ==============================================================
+  # STACK MONITORING (cAdvisor + Prometheus + Grafana)
+  # ==============================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: booknest-cadvisor
+    restart: unless-stopped
+    # Port 8085 digunakan agar tidak bentrok dengan frontend BookNest di port 8080
+    ports:
+      - "8085:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    networks:
+      - booknest-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: booknest-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      # UI Prometheus untuk ad-hoc PromQL query
+      - "9090:9090"
+    networks:
+      - booknest-net
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: booknest-grafana
+    restart: unless-stopped
+    ports:
+      # Dashboard visual Grafana
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/booknest-overview.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - booknest-net
+
 volumes:
   booknest-data:
   booknest-uploads:
+  prometheus-data:
+  grafana-data:
 
 networks:
   booknest-net:

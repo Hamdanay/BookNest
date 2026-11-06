@@ -72,6 +72,9 @@ docker compose up -d
 Buka di browser:
 * **Aplikasi BookNest:** [http://localhost:8080](http://localhost:8080)
 * **Status Kesehatan API:** [http://localhost:8080/api/health](http://localhost:8080/api/health)
+* **Dashboard Monitoring Grafana:** [http://localhost:3000](http://localhost:3000) *(Otomatis login / Anonymous Viewer)*
+* **Prometheus Metrics Engine:** [http://localhost:9090](http://localhost:9090)
+* **cAdvisor Container Inspector:** [http://localhost:8085](http://localhost:8085)
 
 ### 2. Memeriksa Status Kontainer
 ```bash
@@ -86,6 +89,23 @@ docker compose down
 *(Seluruh data buku dan sampul tetap tersimpan aman di Docker Named Volume).*
 
 ---
+
+---
+
+## Observabilitas & Monitoring Real-Time (Prometheus + Grafana + cAdvisor)
+
+Sistem telah dilengkapi dengan stack observabilitas tingkat enterprise:
+
+1. **cAdvisor (Container Advisor):** Mengumpulkan metrik level kontainer langsung dari Docker runtime (CPU usage, Memory RAM consumption, Network I/O).
+2. **Prometheus:** Melakukan scraping metrik periodik setiap 5 detik dari backend Express (endpoint `/metrics`) dan kontainer Docker via cAdvisor.
+3. **Grafana Dashboard:** Visualisasi real-time siap pakai tanpa konfigurasi manual (*auto-provisioned*), menyajikan:
+   - **Container CPU Usage (%):** Pemantauan beban CPU tiap service (backend, frontend, database).
+   - **RAM (Memory) Allocation:** Memori fisik (RSS) dan heap Node.js secara transparan.
+   - **Throughput & Request Rate:** Jumlah HTTP request per detik berdasarkan endpoint.
+   - **Response Latency (p50, p90, p99):** Distribusi waktu respon API dalam hitungan milidetik.
+   - **Health & Uptime:** Status ketersediaan layanan secara langsung.
+
+Akses Grafana di [http://localhost:3000](http://localhost:3000) tanpa perlu login (Anonymous Viewer aktif).
 
 ## Otomatisasi Backup & Disaster Recovery
 

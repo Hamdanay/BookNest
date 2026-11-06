@@ -1,0 +1,24 @@
+{
+  "slug": "booknest-web",
+  "title": "BookNest — Sistem Inventaris Perpustakaan",
+  "subtitle": "Aplikasi web full-stack untuk koleksi & inventaris buku",
+  "role": "Full-Stack Developer (Portofolio Mandiri)",
+  "category": "fullstack",
+  "featured": true,
+  "relatedSlugs": ["booknest-infra"],
+  "summary": "CRUD koleksi buku, dashboard statistik, validasi ISBN, rak & kategori, riwayat perubahan — UI bertema hutan, deploy production di Vercel.",
+  "description": "BookNest adalah alat administrasi untuk perpustakaan kecil: manajemen bibliografi, stok eksemplar, kondisi fisik, dan lokasi rak. Frontend React + Vite; API Express dengan SQLite. Tersedia demo publik di Vercel serta jalur self-hosted lewat Docker (lihat entri infrastruktur).",
+  "highlights": [
+    "Dashboard inventaris, koleksi dengan pencarian & pagination",
+    "Validasi ISBN, aturan kondisi/status eksemplar",
+    "Riwayat perubahan per buku, upload cover, manajemen kategori & rak",
+    "Deploy: Vercel (SPA + serverless API) dan Docker Compose untuk lingkungan lokal/production-like"
+  ],
+  "tags": ["React", "Vite", "Tailwind CSS", "Express", "SQLite", "Vercel"],
+  "links": [
+    { "label": "Live demo", "url": "https://frontend-tau-eight-58.vercel.app/" },
+    { "label": "GitHub", "url": "https://github.com/Hamdanay/BookNest" }
+  ],
+  "thumbnail": "/images/projects/booknest-web/thumbnail.png",
+  "gallery": []
+}

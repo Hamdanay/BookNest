@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" style="background:#0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+
+    <!-- Marker Arrow -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399" />
+    </marker>
+  </defs>
+
+  <!-- Background Grid Pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.8" opacity="0.6"/>
+  </pattern>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Title & Subtitle -->
+  <text x="600" y="55" font-size="28" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="1">BOOKNEST SYSTEM ARCHITECTURE</text>
+  <text x="600" y="85" font-size="14" font-weight="500" fill="#94a3b8" text-anchor="middle" letter-spacing="0.5">Containerized Infrastructure, Nginx Reverse Proxy, Automated 3-2-1 Backup &amp; CI/CD Pipeline</text>
+
+  <!-- ==================== DOCKER ENVIRONMENT BOUNDARY ==================== -->
+  <rect x="270" y="120" width="880" height="390" rx="20" fill="#131e36" stroke="#334155" stroke-width="1.8" stroke-dasharray="6,6" filter="url(#dropShadow)"/>
+  <rect x="290" y="105" width="220" height="30" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+  <text x="400" y="125" font-size="12" font-weight="700" fill="#60a5fa" text-anchor="middle">DOCKER ENGINE (booknest-net)</text>
+
+  <!-- ==================== CLIENT (BROWSER) ==================== -->
+  <g transform="translate(40, 235)">
+    <rect width="180" height="150" rx="16" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="2" filter="url(#dropShadow)"/>
+    <circle cx="90" cy="50" r="26" fill="url(#blueGrad)"/>
+    <!-- Browser Icon -->
+    <path d="M 76 50 C 76 42 82 36 90 36 C 98 36 104 42 104 50 C 104 58 98 64 90 64 C 82 64 76 58 76 50 Z" fill="none" stroke="#ffffff" stroke-width="2"/>
+    <path d="M 76 50 L 104 50 M 90 36 C 86 41 84 45 84 50 C 84 55 86 59 90 64 M 90 36 C 94 41 96 45 96 50 C 96 55 94 59 90 64" fill="none" stroke="#ffffff" stroke-width="1.6"/>
+    <text x="90" y="105" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">Client / Browser</text>
+    <text x="90" y="125" font-size="11" font-weight="500" fill="#94a3b8" text-anchor="middle">http://localhost:8080</text>
+  </g>
+
+  <!-- Connection: Browser -> Nginx -->
+  <path d="M 220 310 L 310 310" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="265" y="298" font-size="10" font-weight="700" fill="#38bdf8" text-anchor="middle">:8080 HTTP</text>
+
+  <!-- ==================== FRONTEND CONTAINER (NGINX) ==================== -->
+  <g transform="translate(320, 160)">
+    <rect width="230" height="310" rx="14" fill="url(#cardGrad)" stroke="#10b981" stroke-width="2" filter="url(#dropShadow)"/>
+    <rect x="15" y="15" width="200" height="36" rx="8" fill="url(#emeraldGrad)"/>
+    <text x="115" y="38" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">booknest-frontend</text>
+    <text x="115" y="70" font-size="11" font-weight="600" fill="#34d399" text-anchor="middle">nginx:alpine (Port 80)</text>
+
+    <!-- Sub-box: React SPA -->
+    <rect x="18" y="90" width="194" height="75" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="115" y="112" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">Static Web Assets</text>
+    <text x="115" y="130" font-size="10.5" fill="#94a3b8" text-anchor="middle">Vite + React SPA Dist</text>
+    <text x="115" y="148" font-size="9.5" fill="#64748b" text-anchor="middle">location / { try_files $uri /index.html }</text>
+
+    <!-- Sub-box: Reverse Proxy Engine -->
+    <rect x="18" y="180" width="194" height="110" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="115" y="202" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">Reverse Proxy Rules</text>
+    <text x="115" y="222" font-size="10" fill="#38bdf8" text-anchor="middle">proxy_pass http://backend:3002</text>
+    <text x="115" y="242" font-size="9.5" fill="#94a3b8" text-anchor="middle">• /api/* → Express REST API</text>
+    <text x="115" y="260" font-size="9.5" fill="#94a3b8" text-anchor="middle">• /uploads/* → Book Covers</text>
+    <text x="115" y="278" font-size="9" font-weight="600" fill="#10b981" text-anchor="middle">Zero CORS | Same-Origin Gateway</text>
+  </g>
+
+  <!-- Connection: Nginx -> Backend -->
+  <path d="M 550 310 L 620 310" stroke="#34d399" stroke-width="2.5" fill="none" marker-end="url(#arrowGreen)"/>
+  <text x="585" y="295" font-size="10" font-weight="700" fill="#34d399" text-anchor="middle">Internal</text>
+  <text x="585" y="325" font-size="9" fill="#94a3b8" text-anchor="middle">:3002</text>
+
+  <!-- ==================== BACKEND CONTAINER (NODE.JS) ==================== -->
+  <g transform="translate(630, 160)">
+    <rect width="250" height="310" rx="14" fill="url(#cardGrad)" stroke="#8b5cf6" stroke-width="2" filter="url(#dropShadow)"/>
+    <rect x="15" y="15" width="220" height="36" rx="8" fill="url(#purpleGrad)"/>
+    <text x="125" y="38" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">booknest-backend</text>
+    <text x="125" y="70" font-size="11" font-weight="600" fill="#c084fc" text-anchor="middle">Node 20 Slim | Non-Root (node)</text>
+
+    <!-- Sub-box: Express API -->
+    <rect x="18" y="90" width="214" height="110" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="125" y="112" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">Express.js REST Engine</text>
+    <text x="125" y="132" font-size="10" fill="#94a3b8" text-anchor="middle">• CRUD Buku, Kategori, Rak</text>
+    <text x="125" y="150" font-size="10" fill="#94a3b8" text-anchor="middle">• Healthcheck Endpoint (/api/health)</text>
+    <text x="125" y="168" font-size="10" fill="#94a3b8" text-anchor="middle">• Multer Image Upload Handler</text>
+    <text x="125" y="186" font-size="9" font-weight="600" fill="#38bdf8" text-anchor="middle">Graceful Shutdown (SIGTERM/SIGINT)</text>
+
+    <!-- Sub-box: DB Engine -->
+    <rect x="18" y="215" width="214" height="75" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="125" y="238" font-size="12" font-weight="700" fill="#f8fafc" text-anchor="middle">SQLite Engine (better-sqlite3)</text>
+    <text x="125" y="258" font-size="10" fill="#34d399" text-anchor="middle">PRAGMA journal_mode = WAL</text>
+    <text x="125" y="274" font-size="9" fill="#94a3b8" text-anchor="middle">Native Online Backup API</text>
+  </g>
+
+  <!-- Connection: Backend -> Volumes -->
+  <path d="M 880 255 L 940 255" stroke="#a855f7" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 880 395 L 940 395" stroke="#a855f7" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- ==================== PERSISTENT VOLUMES ==================== -->
+  <g transform="translate(950, 180)">
+    <!-- Volume 1: DB -->
+    <rect width="180" height="120" rx="12" fill="url(#cardGrad)" stroke="#f59e0b" stroke-width="1.6" filter="url(#dropShadow)"/>
+    <circle cx="30" cy="30" r="12" fill="url(#amberGrad)"/>
+    <text x="30" y="34" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">V1</text>
+    <text x="50" y="34" font-size="12" font-weight="700" fill="#fbbf24">booknest-data</text>
+    <text x="20" y="65" font-size="10.5" font-weight="600" fill="#f8fafc">/app/data/</text>
+    <text x="20" y="85" font-size="9.5" fill="#94a3b8">• booknest.db</text>
+    <text x="20" y="100" font-size="9.5" fill="#94a3b8">• booknest.db-wal</text>
+
+    <!-- Volume 2: Uploads -->
+    <g transform="translate(0, 140)">
+      <rect width="180" height="100" rx="12" fill="url(#cardGrad)" stroke="#64748b" stroke-width="1.6" filter="url(#dropShadow)"/>
+      <circle cx="30" cy="28" r="12" fill="#475569"/>
+      <text x="30" y="32" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">V2</text>
+      <text x="50" y="32" font-size="12" font-weight="700" fill="#cbd5e1">booknest-uploads</text>
+      <text x="20" y="60" font-size="10.5" font-weight="600" fill="#f8fafc">/app/uploads/</text>
+      <text x="20" y="80" font-size="9.5" fill="#94a3b8">• Sampul Buku (JPG/PNG)</text>
+    </g>
+  </g>
+
+  <!-- ==================== BOTTOM PANELS: BACKUP & CI/CD ==================== -->
+
+  <!-- Panel 1: Disaster Recovery & 3-2-1 Off-site Backup -->
+  <g transform="translate(40, 530)">
+    <rect width="530" height="115" rx="14" fill="#131e36" stroke="#0ea5e9" stroke-width="1.5" filter="url(#dropShadow)"/>
+    <rect x="15" y="15" width="130" height="24" rx="6" fill="#0284c7"/>
+    <text x="80" y="31" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">DISASTER RECOVERY</text>
+    <text x="155" y="32" font-size="12" font-weight="700" fill="#38bdf8">Automated 3-2-1 Off-site Backup Strategy</text>
+    
+    <text x="20" y="62" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">Integrity Check:</tspan> PRAGMA integrity_check mencegah replikasi data corrupt.</text>
+    <text x="20" y="80" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">Off-site Cloud:</tspan> Upload snapshot .db via Telegram Bot API + Rolling 7-day.</text>
+    <text x="20" y="98" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">Task Scheduler:</tspan> Otomasi jam 00:00 | <tspan fill="#34d399" font-weight="700">RTO &lt; 5 detik</tspan> via restore.ps1.</text>
+  </g>
+
+  <!-- Panel 2: GitHub Actions CI/CD -->
+  <g transform="translate(590, 530)">
+    <rect width="570" height="115" rx="14" fill="#131e36" stroke="#22c55e" stroke-width="1.5" filter="url(#dropShadow)"/>
+    <rect x="15" y="15" width="140" height="24" rx="6" fill="#15803d"/>
+    <text x="85" y="31" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">GITHUB ACTIONS CI</text>
+    <text x="165" y="32" font-size="12" font-weight="700" fill="#4ade80">Automated Testing &amp; Quality Gate</text>
+
+    <text x="20" y="62" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">Trigger on Push:</tspan> Otomatis jalan di Ubuntu Runner saat push/PR ke branch main.</text>
+    <text x="20" y="80" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">18 Unit &amp; Integration Tests:</tspan> Validasi endpoint Supertest &amp; kalkulasi bisnis.</text>
+    <text x="20" y="98" font-size="10.5" fill="#cbd5e1">• <tspan font-weight="700" fill="#ffffff">Build Verification:</tspan> Validasi build Docker image multi-stage sebelum rilis.</text>
+  </g>
+</svg>

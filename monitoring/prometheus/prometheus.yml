@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # Scrape metrik internal aplikasi Express BookNest (API latency, req/s, heap memory)
+  - job_name: 'booknest-backend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:3002']
+        labels:
+          service: 'booknest-backend'
+
+  # Scrape metrik container Docker dari cAdvisor (CPU, RAM, Network container)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'cadvisor'

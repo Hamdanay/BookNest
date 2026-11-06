@@ -10,6 +10,7 @@ import dashboardRouter from './routes/dashboard.js';
 import seedRouter, { allowSeedReset } from './routes/seed.js';
 import racksRouter from './routes/racks.js';
 import { seedDatabase } from './seed.js';
+import { register, metricsMiddleware } from './metrics.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -33,6 +34,7 @@ function corsOrigin(origin, callback) {
   return callback(new Error('CORS tidak diizinkan untuk origin ini'));
 }
 
+app.use(metricsMiddleware);
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(uploadsDir));
@@ -77,6 +79,16 @@ app.get('/api/meta', (_req, res) => {
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'BookNest API' });
+});
+
+// Endpoint metrics untuk di-scrape oleh Prometheus
+app.get('/metrics', async (_req, res) => {
+  try {
+    res.setHeader('Content-Type', register.contentType);
+    res.send(await register.metrics());
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 });
 
 app.use((err, _req, res, _next) => {

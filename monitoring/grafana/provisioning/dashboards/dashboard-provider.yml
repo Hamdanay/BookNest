@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'BookNest Dashboards'
+    orgId: 1
+    folder: 'BookNest Monitoring'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

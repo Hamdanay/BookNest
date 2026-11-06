@@ -1,0 +1,66 @@
+{
+  "slug": "booknest-infra",
+  "title": "BookNest — Kontainerisasi, CI/CD & Disaster Recovery",
+  "subtitle": "Sistem inventaris perpustakaan yang sama; fokus infrastruktur & operasi",
+  "role": "IT Infrastructure & DevOps Engineer (Portofolio Mandiri)",
+  "category": "devops",
+  "featured": true,
+  "relatedSlugs": ["booknest-web"],
+  "summary": "Stack produksi lokal BookNest: Docker Compose, Nginx reverse proxy, GitHub Actions, backup SQLite 3-2-1 dengan off-site Telegram, dan skenario restore teruji.",
+  "description": "Proyek ini melanjutkan aplikasi BookNest dengan lapisan operasional: kontainer multi-service, gerbang tunggal di port 8080, healthcheck & rotasi log, pipeline CI yang menjalankan tes otomatis dan verifikasi build image Docker, serta otomasi backup database memakai SQLite Online Backup API dengan integrity check dan retensi 7 hari. Cadangan off-site diunggah lewat Telegram Bot API sebagai bagian strategi 3-2-1; pemulihan diuji di lingkungan Docker lokal hingga layanan dan data inventaris kembali normal.",
+  "highlights": [
+    "Kontainer Docker (backend non-root) + Docker Compose dengan volume persisten untuk data SQLite dan upload cover",
+    "Nginx reverse proxy sebagai single entry :8080 — SPA, /api, dan /uploads same-origin tanpa CORS di browser",
+    "GitHub Actions: unit & integration test backend, test frontend, lalu build image Docker sebagai quality gate",
+    "Backup otomatis: PRAGMA integrity_check, snapshot online, retensi 7 hari, notifikasi & lampiran .db ke Telegram",
+    "Disaster recovery: skrip restore + verifikasi /api/health; dokumentasi penjadwalan Task Scheduler / cron"
+  ],
+  "tags": [
+    "Docker",
+    "Docker Compose",
+    "Nginx",
+    "GitHub Actions",
+    "SQLite WAL",
+    "PowerShell",
+    "Telegram Bot API",
+    "Node.js",
+    "Express"
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/Hamdanay/BookNest"
+    },
+    {
+      "label": "CI Pipeline",
+      "url": "https://github.com/Hamdanay/BookNest/actions/workflows/ci.yml"
+    },
+    {
+      "label": "Demo aplikasi (Vercel)",
+      "url": "https://frontend-tau-eight-58.vercel.app/"
+    }
+  ],
+  "thumbnail": "/images/projects/booknest-infra/thumbnail.png",
+  "gallery": [
+    {
+      "src": "/images/projects/booknest-infra/thumbnail.png",
+      "caption": "Arsitektur: Docker Engine, Nginx :8080, Express + SQLite WAL, volume persisten, backup 3-2-1 & CI/CD.",
+      "alt": "Diagram arsitektur BookNest"
+    },
+    {
+      "src": "/images/projects/booknest-infra/ci-github-actions.jpeg",
+      "caption": "Pipeline CI: Run Unit Tests → Verify Docker Images Build (push ke main).",
+      "alt": "Screenshot GitHub Actions sukses"
+    },
+    {
+      "src": "/images/projects/booknest-infra/backup-telegram.jpeg",
+      "caption": "Backup harian: integrity check, online snapshot, retensi 7 hari, off-site via Telegram Bot API.",
+      "alt": "Terminal backup dan notifikasi Telegram"
+    },
+    {
+      "src": "/images/projects/booknest-infra/restore-docker-ui.jpeg",
+      "caption": "Restore database di Docker: layanan healthy kembali dan dashboard inventaris menampilkan data.",
+      "alt": "Restore sukses dan UI BookNest"
+    }
+  ]
+}

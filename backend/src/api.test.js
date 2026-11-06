@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import app from './server.js';
 
+test('Integration Test: GET /metrics mengembalikan Prometheus metrics', async () => {
+  const res = await request(app).get('/metrics');
+  assert.equal(res.status, 200);
+  assert.match(res.text, /booknest_/);
+});
+
 test('Integration Test: GET /api/health mengembalikan status 200 dan format ok', async () => {
   const res = await request(app).get('/api/health');
   assert.equal(res.status, 200);
