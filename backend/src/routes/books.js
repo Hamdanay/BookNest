@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../db.js';
+import { db, syncBookToPg } from '../db.js';
 import { rowToBook } from '../book-mapper.js';
 import { DEFAULT_COVER, KONDISI_OPTIONS, STATUS_OPTIONS } from '../seed-data.js';
 import { digitsOnly, isbnDigitsSql, isbnLookupNeedle, validateIsbn } from '../isbn.js';

@@ -3,7 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { db, uploadsDir } from './db.js';
+import { db, uploadsDir, getDatabaseStatus } from './db.js';
 import booksRouter from './routes/books.js';
 import categoriesRouter from './routes/categories.js';
 import dashboardRouter from './routes/dashboard.js';
@@ -78,7 +78,8 @@ app.get('/api/meta', (_req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'BookNest API' });
+  const dbStatus = getDatabaseStatus();
+  res.json({ ok: true, service: 'BookNest API', database: dbStatus.engine, dbHost: dbStatus.host, connected: dbStatus.connected });
 });
 
 // Endpoint metrics untuk di-scrape oleh Prometheus

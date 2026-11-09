@@ -4,39 +4,48 @@ export default {
   theme: {
     extend: {
       colors: {
-        'nest-primary': '#0f1a16',
-        'nest-dark': '#0a100e',
-        'nest-secondary': '#1e3329',
-        'nest-warm': '#2f4f40',
-        'nest-gold': '#c9a962',
-        'nest-bg': '#0c1411',
-        'nest-surface': '#f0ebe0',
-        'nest-border': '#c9a96238',
-        'nest-text': '#1a2822',
-        'nest-muted': '#5c6b63',
-        'nest-olive': '#4a6b58',
-        'nest-danger': '#9e4a4a',
-        'nest-beige': '#b8a078',
-        'nest-orange': '#a67c52',
-        mist: {
-          DEFAULT: '#c8d9cf',
-          dim: '#8fa894',
-          faint: '#5a6f64',
-        },
-        folio: {
-          ink: '#1a2822',
-          muted: '#5c6b63',
-          line: '#1a28221f',
+        forest: {
+          deep: '#101513',      // Deep canopy shadow
+          bark: '#161B18',      // Damp bark charcoal
+          moss: '#1C2826',      // Deep moss green
+          lichen: '#243431',    // Elevated card surface
+          emerald: '#2D443E',   // Frosted emerald glass
+          sage: '#8FA294',      // Misty sage
+          dew: '#BAC7BE',       // Muted text
+          mist: '#E5EAE5',      // High-contrast primary text
+          amber: '#D4A373',     // Bioluminescent amber accent
+          glow: '#E9C46A',      // Lantern filament highlight
         },
       },
       fontFamily: {
-        sans: ['"Albert Sans"', 'system-ui', 'sans-serif'],
-        display: ['"Fraunces"', 'Georgia', 'serif'],
-        serif: ['"Fraunces"', 'Georgia', 'serif'],
+        serif: ['"Fraunces"', '"Cormorant Garamond"', 'Georgia', 'serif'],
+        ancient: ['"Cinzel"', 'serif'],
+        sans: ['"Alegreya Sans"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
-        folio: '0 28px 60px #00000073, inset 0 1px 0 #ffffff73',
-        glow: '0 0 40px #4a6b5826',
+        debossed: 'inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05)',
+        bookspine: '4px 0 10px rgba(0, 0, 0, 0.5), inset -2px 0 4px rgba(0, 0, 0, 0.4)',
+        bioglow: '0 0 20px rgba(212, 163, 115, 0.15)',
+        forestcard: '0 12px 32px rgba(8, 12, 10, 0.5), inset 0 1px 0 rgba(143, 162, 148, 0.12)',
+      },
+      transitionTimingFunction: {
+        'page-curl': 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+      keyframes: {
+        biopulse: {
+          '0%, 100%': { opacity: '0.9', transform: 'scale(1)' },
+          '50%': { opacity: '0.4', transform: 'scale(0.96)' },
+        },
+        drift: {
+          '0%': { transform: 'translateY(0px) rotate(0deg)', opacity: '0' },
+          '50%': { opacity: '0.6' },
+          '100%': { transform: 'translateY(-16px) rotate(12deg)', opacity: '0' },
+        },
+      },
+      animation: {
+        'bio-pulse': 'biopulse 3s ease-in-out infinite',
+        'spore-drift': 'drift 4s ease-out infinite',
       },
     },
   },

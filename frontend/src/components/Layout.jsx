@@ -1,12 +1,22 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  Compass,
+  BookOpen,
+  FolderTree,
+  Archive,
+  Plus,
+  Activity,
+  Menu,
+  X,
+  RotateCcw,
+  Sparkles,
+  TreePine,
+  ShieldCheck,
+  ChevronRight,
+} from 'lucide-react';
 import { api } from '../api/client';
 import { showToast } from './Toast';
-
-const navClass = ({ isActive }) =>
-  `elf-nav-link min-h-[44px] ${isActive ? 'elf-nav-active' : ''}`;
-
-const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -14,80 +24,28 @@ export default function Layout() {
   const [allowSeedReset, setAllowSeedReset] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const drawerRef = useRef(null);
-  const menuButtonRef = useRef(null);
 
   useEffect(() => {
-    api.getDashboard().then((d) => setTotalJudul(d.stats.totalJudul)).catch(() => {});
-    api.getMeta().then((m) => setAllowSeedReset(Boolean(m.allowSeedReset))).catch(() => setAllowSeedReset(false));
-  }, []);
+    api
+      .getDashboard()
+      .then((d) => setTotalJudul(d.stats?.totalJudul || 0))
+      .catch(() => {});
+
+    api
+      .getMeta()
+      .then((m) => setAllowSeedReset(Boolean(m.allowSeedReset)))
+      .catch(() => setAllowSeedReset(false));
+  }, [location.pathname]);
 
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  useEffect(() => {
-    if (!mobileOpen) {
-      document.body.style.overflow = '';
-      return undefined;
-    }
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const drawer = drawerRef.current;
-    const focusables = drawer?.querySelectorAll(FOCUSABLE);
-    const first = focusables?.[0];
-    first?.focus();
-
-    function onKey(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setMobileOpen(false);
-        return;
-      }
-      if (e.key !== 'Tab' || !drawer) return;
-      const items = [...drawer.querySelectorAll(FOCUSABLE)];
-      if (!items.length) return;
-      const head = items[0];
-      const tail = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === head) {
-        e.preventDefault();
-        tail.focus();
-      } else if (!e.shiftKey && document.activeElement === tail) {
-        e.preventDefault();
-        head.focus();
-      }
-    }
-
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [mobileOpen]);
-
-  const wasDrawerOpen = useRef(false);
-  useEffect(() => {
-    if (mobileOpen) {
-      wasDrawerOpen.current = true;
-      return;
-    }
-    if (wasDrawerOpen.current && window.matchMedia('(max-width: 767px)').matches) {
-      menuButtonRef.current?.focus();
-    }
-    wasDrawerOpen.current = false;
-  }, [mobileOpen]);
-
-  const refreshBadge = () => {
-    api.getDashboard().then((d) => setTotalJudul(d.stats.totalJudul)).catch(() => {});
-  };
-
   async function handleReset() {
-    if (!confirm('Reset data koleksi kembali ke sampel awal?')) return;
+    if (!window.confirm('Reset data koleksi kembali ke bibit awal perpustakaan?')) return;
     try {
       await api.resetSeed();
-      showToast('Data telah di-reset ke data sampel.', 'info');
-      refreshBadge();
+      showToast('Data telah kembali ke benih awal perpustakaan.', 'info');
       navigate('/');
       window.location.reload();
     } catch (e) {
@@ -95,129 +53,295 @@ export default function Layout() {
     }
   }
 
+  const navLinks = [
+    {
+      to: '/',
+      label: 'Sanctuary Kanopi',
+      subtitle: 'Overview & Vitalitas',
+      icon: Compass,
+    },
+    {
+      to: '/koleksi',
+      label: 'The Living Archive',
+      subtitle: `${totalJudul > 0 ? `${totalJudul} Judul` : 'Katalog Fisik'}`,
+      icon: BookOpen,
+      badge: totalJudul > 0 ? totalJudul : null,
+    },
+    {
+      to: '/kategori',
+      label: 'Klasifikasi Tajuk',
+      subtitle: 'Spesies Taksonomi',
+      icon: FolderTree,
+    },
+    {
+      to: '/rak',
+      label: 'Pohon & Rak Fisik',
+      subtitle: 'Arsitektur Kayu Aras',
+      icon: Archive,
+    },
+    {
+      to: '/showcase',
+      label: 'System & Docker',
+      subtitle: 'Arsitektur & Kode',
+      icon: Activity,
+    },
+  ];
+
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col md:flex-row selection:bg-nest-gold/40 selection:text-mist">
-      <header className="md:hidden elf-sidebar relative px-4 py-3 flex justify-between items-center sticky top-0 z-30 safe-top shrink-0">
-        <div className="flex items-center gap-3 relative z-10 min-w-0">
-          <div className="w-10 h-10 rounded-2xl border border-nest-gold/30 flex items-center justify-center bg-nest-secondary/50 text-nest-gold flex-shrink-0">
-            <i className="fa-solid fa-tree text-lg" />
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#0C120F] text-forest-mist font-sans selection:bg-forest-amber/30 selection:text-forest-amber">
+      {/* Mobile Top App Bar */}
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#121915]/95 border-b border-forest-sage/20 sticky top-0 z-40 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-b from-[#243431] to-[#121915] border border-forest-amber/40 flex items-center justify-center text-forest-amber font-serif font-bold text-sm shadow-debossed">
+            BN
           </div>
-          <div className="min-w-0">
-            <h1 className="font-display font-semibold text-base text-mist leading-none truncate">BookNest</h1>
-            <p className="text-[10px] text-mist-dim truncate">Perpustakaan hutan</p>
+          <div>
+            <span className="font-serif font-bold text-forest-mist text-base tracking-tight block">
+              BookNest Sanctuary
+            </span>
+            <span className="text-[10px] font-mono text-forest-amber flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-forest-amber animate-bio-pulse" />
+              Kanopi Online
+            </span>
           </div>
         </div>
         <button
-          ref={menuButtonRef}
-          type="button"
-          className="p-3 text-mist-dim hover:text-mist relative z-10 rounded-xl min-w-[44px] min-h-[44px] flex items-center justify-center"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Buka menu"
-          aria-expanded={mobileOpen}
-          aria-controls="app-sidebar"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 rounded-xl text-forest-sage hover:text-forest-mist hover:bg-forest-moss/30 transition-colors"
+          aria-label="Buka Menu Navigasi"
         >
-          <i className="fa-solid fa-bars text-xl" />
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </header>
 
-      {mobileOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 bg-nest-dark/75 backdrop-blur-sm z-40 md:hidden"
-          aria-label="Tutup menu"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      <aside
-        id="app-sidebar"
-        ref={drawerRef}
-        role={mobileOpen ? 'dialog' : undefined}
-        aria-modal={mobileOpen ? true : undefined}
-        aria-label="Navigasi BookNest"
-        className={`elf-sidebar flex flex-col w-[17.5rem] max-w-[85vw] flex-shrink-0 overflow-y-auto md:sticky md:top-0 md:z-40 md:h-screen max-md:fixed max-md:top-0 max-md:left-0 max-md:z-50 max-md:h-[100dvh] max-md:transition-transform max-md:duration-300 ${
-          mobileOpen ? 'max-md:flex' : 'max-md:hidden'
-        }`}
-      >
-        <div className="p-5 border-b border-white/5 flex items-center justify-between gap-3 relative z-10 safe-top md:pt-6">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-2xl border border-nest-gold/35 bg-gradient-to-br from-nest-warm/60 to-nest-secondary flex items-center justify-center text-nest-gold shadow-glow flex-shrink-0">
-              <i className="fa-solid fa-book-open text-xl" />
-            </div>
-            <div className="min-w-0 hidden md:block">
-              <h1 className="font-display font-semibold text-xl text-mist tracking-tight">BookNest</h1>
-              <p className="text-xs text-mist-faint">Koleksi di bawah kanopi</p>
-            </div>
-            <div className="min-w-0 md:hidden">
-              <h2 className="font-display font-semibold text-lg text-mist">Menu</h2>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="md:hidden p-2 rounded-xl text-mist-dim hover:text-mist min-w-[44px] min-h-[44px] flex items-center justify-center"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Tutup menu"
+      {/* Desktop Handcrafted Carved Wooden Sanctuary Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 border-r border-forest-sage/15 bg-gradient-to-b from-[#141C18]/95 via-[#121815]/90 to-[#0F1412]/95 backdrop-blur-xl p-5 shrink-0 sticky top-0 h-screen justify-between z-30 shadow-2xl">
+        {/* Top: Emblem, Title, Status & Quick Action */}
+        <div className="space-y-6">
+          {/* Sanctuary Brand Header */}
+          <NavLink
+            to="/"
+            className="group flex items-center gap-3.5 p-2 rounded-xl border border-transparent hover:border-forest-amber/25 hover:bg-forest-moss/20 transition-all duration-300"
           >
-            <i className="fa-solid fa-xmark text-xl" />
-          </button>
+            <div className="relative h-12 w-12 rounded-xl bg-gradient-to-b from-forest-moss to-forest-bark border border-forest-amber/40 shadow-debossed flex items-center justify-center text-forest-amber font-serif font-bold text-lg group-hover:border-forest-amber group-hover:shadow-bioglow transition-all duration-300 shrink-0">
+              <span>BN</span>
+              <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full bg-forest-amber border-2 border-[#121915] animate-bio-pulse" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-serif font-bold text-base text-forest-mist group-hover:text-forest-amber transition-colors tracking-tight">
+                BookNest
+              </div>
+              <div className="text-[10px] font-ancient tracking-widest text-forest-amber uppercase">
+                Ancient Sanctuary
+              </div>
+            </div>
+          </NavLink>
+
+          {/* Quick Primary Action: Ukir / Tambah Buku */}
+          <NavLink
+            to="/tambah"
+            title="Tambah Entri Koleksi Buku Baru"
+            className="sanctuary-btn-amber w-full justify-center py-2.5 shadow-bioglow font-serif tracking-wider"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span>Ukir / Tambah Buku</span>
+          </NavLink>
+
+          {/* Navigation Menu */}
+          <nav className="space-y-1.5 pt-2">
+            <div className="px-3 pb-2 text-[10px] font-mono tracking-widest text-forest-sage/70 uppercase">
+              Navigasi Kanopi
+            </div>
+
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) =>
+                    `group relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-300 ${
+                      isActive
+                        ? 'bg-forest-moss/80 text-forest-amber border border-forest-amber/40 shadow-debossed font-semibold'
+                        : 'text-forest-sage hover:text-forest-mist hover:bg-forest-moss/30 border border-transparent'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`h-8 w-8 rounded-lg flex items-center justify-center border transition-all ${
+                            isActive
+                              ? 'bg-forest-amber/15 border-forest-amber/40 text-forest-amber shadow-bioglow'
+                              : 'bg-[#101513] border-forest-sage/20 text-forest-sage group-hover:border-forest-amber/30 group-hover:text-forest-amber'
+                          }`}
+                        >
+                          <Icon size={16} />
+                        </div>
+                        <div className="min-w-0 text-left">
+                          <div className="font-serif text-sm truncate text-forest-mist group-hover:text-forest-amber transition-colors">
+                            {item.label}
+                          </div>
+                          <div className="text-[10px] font-mono text-forest-sage/70 truncate">
+                            {item.subtitle}
+                          </div>
+                        </div>
+                      </div>
+
+                      {item.badge ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-forest-amber/15 text-forest-amber border border-forest-amber/30">
+                          {item.badge}
+                        </span>
+                      ) : (
+                        <ChevronRight
+                          size={14}
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity ${
+                            isActive ? 'opacity-100 text-forest-amber' : 'text-forest-sage/50'
+                          }`}
+                        />
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="flex-1 py-4 space-y-1 px-3 relative z-10">
-          <NavLink to="/" end className={navClass} onClick={() => setMobileOpen(false)}>
-            <i className="fa-solid fa-moon w-5 text-center text-nest-gold/90 flex-shrink-0" />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/koleksi" className={navClass} onClick={() => setMobileOpen(false)}>
-            <i className="fa-solid fa-scroll w-5 text-center text-nest-gold/90 flex-shrink-0" />
-            <span>Daftar Koleksi</span>
-          </NavLink>
-          <NavLink to="/tambah" className={navClass} onClick={() => setMobileOpen(false)}>
-            <i className="fa-solid fa-feather-pointed w-5 text-center text-nest-gold/90 flex-shrink-0" />
-            <span>Tambah Buku</span>
-          </NavLink>
-          <NavLink to="/kategori" className={navClass} onClick={() => setMobileOpen(false)}>
-            <i className="fa-solid fa-leaf w-5 text-center text-nest-gold/90 flex-shrink-0" />
-            <span>Kategori</span>
-          </NavLink>
-          <NavLink to="/rak" className={navClass} onClick={() => setMobileOpen(false)}>
-            <i className="fa-solid fa-layer-group w-5 text-center text-nest-gold/90 flex-shrink-0" />
-            <span>Rak</span>
-          </NavLink>
-        </nav>
+        {/* Bottom Sidebar: Observability, Seed Reset & Sanctuary Telemetry */}
+        <div className="space-y-3 pt-4 border-t border-forest-sage/15">
+          {/* Micro Telemetry Pill */}
+          <div className="p-3 rounded-xl bg-[#0F1512] border border-forest-sage/15 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="text-forest-sage flex items-center gap-1.5">
+                <ShieldCheck size={13} className="text-forest-amber" />
+                Sanctuary v2.0
+              </span>
+              <span className="text-forest-amber text-[10px]">ORGANIC</span>
+            </div>
 
-        <div className="p-4 border-t border-white/5 relative z-10 text-xs text-mist-faint safe-bottom">
-          <div className="flex items-center justify-between mb-2 gap-2">
-            <span className="text-nest-gold/90 font-medium">Arsip v1.0</span>
-            <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-mist-dim whitespace-nowrap">
-              {totalJudul} judul
-            </span>
+            <div className="text-[10px] text-forest-dew/60 leading-tight">
+              Arsitektur terdistribusi terhubung ke Prometheus & Grafana.
+            </div>
+
+            {/* Grafana Direct Trigger */}
+            <a
+              href="http://localhost:3000"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#141B18] text-[11px] font-mono text-forest-amber hover:bg-forest-amber/10 border border-forest-amber/30 transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <Activity size={13} className="animate-pulse" />
+                <span>Grafana Monitor</span>
+              </div>
+              <span className="text-[10px] text-forest-sage">:3000</span>
+            </a>
           </div>
-          <p className="text-[11px] leading-relaxed opacity-80">
-            Inventaris tanpa penjualan atau peminjaman. Alat administrasi lokal.
-          </p>
+
+          {/* Seed Reset Option */}
           {allowSeedReset && (
             <button
-              type="button"
               onClick={handleReset}
-              className="mt-3 text-[11px] text-nest-gold/80 hover:text-nest-gold flex items-center gap-1.5 min-h-[44px]"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-mono text-forest-sage/70 hover:text-rose-400 hover:bg-rose-950/20 border border-transparent hover:border-rose-900/30 transition-colors"
+              title="Reset data koleksi ke kondisi bibit awal"
             >
-              <i className="fa-solid fa-rotate-left" /> Pulihkan data sampel
+              <RotateCcw size={13} />
+              <span>Reset Benih Awal</span>
             </button>
           )}
         </div>
       </aside>
 
-      <main className="flex-1 w-full min-w-0 relative z-0 px-3 py-4 sm:px-4 sm:py-6 md:px-10 md:py-10">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L32 8 L30 16 L28 8 Z' fill='%23c9a962' fill-opacity='0.35'/%3E%3C/svg%3E")`,
-          }}
-          aria-hidden
-        />
-        <div className="relative z-10 max-w-6xl mx-auto space-y-6 sm:space-y-8 pb-8">
-          <Outlet />
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden bg-[#0C120F]/95 backdrop-blur-xl flex flex-col justify-between p-6 animate-fade-in">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-forest-sage/20">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-forest-amber text-[#101513] font-serif font-bold text-lg flex items-center justify-center shadow-bioglow">
+                  BN
+                </div>
+                <div>
+                  <span className="font-serif font-bold text-lg text-forest-mist block">
+                    BookNest Sanctuary
+                  </span>
+                  <span className="text-[10px] font-mono text-forest-amber">
+                    Ancient Forest Sanctuary
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-2 rounded-xl text-forest-sage hover:text-forest-mist bg-forest-moss/40"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <NavLink
+              to="/tambah"
+              onClick={() => setMobileOpen(false)}
+              className="sanctuary-btn-amber w-full justify-center py-3 text-xs shadow-bioglow font-serif"
+            >
+              <Plus size={16} />
+              <span>Ukir / Tambah Buku</span>
+            </NavLink>
+
+            <nav className="space-y-2">
+              {navLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === '/'}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between px-4 py-3 rounded-xl text-sm font-serif ${
+                        isActive
+                          ? 'bg-forest-moss text-forest-amber border border-forest-amber/40 font-bold'
+                          : 'text-forest-sage hover:text-forest-mist hover:bg-forest-moss/30'
+                      }`
+                    }
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-forest-amber/20 text-forest-amber">
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+
+          <div className="pt-4 border-t border-forest-sage/20 space-y-3">
+            <a
+              href="http://localhost:3000"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between p-3 rounded-xl bg-[#141B18] text-xs font-mono text-forest-amber border border-forest-amber/30"
+            >
+              <div className="flex items-center gap-2">
+                <Activity size={15} />
+                <span>Monitoring Grafana</span>
+              </div>
+              <span>:3000</span>
+            </a>
+          </div>
         </div>
+      )}
+
+      {/* Main Sanctuary Sanctuary Space */}
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0 page-leaf-enter">
+        <Outlet />
       </main>
     </div>
   );

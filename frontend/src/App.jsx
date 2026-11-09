@@ -7,6 +7,7 @@ import Collection from './pages/Collection';
 import BookDetail from './pages/BookDetail';
 import Categories from './pages/Categories';
 import Racks from './pages/Racks';
+import Showcase from './pages/Showcase';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="edit/:id" element={<BookFormWrapper />} />
           <Route path="kategori" element={<Categories />} />
           <Route path="rak" element={<Racks />} />
+          <Route path="showcase" element={<Showcase />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

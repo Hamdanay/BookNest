@@ -10,3 +10,4 @@ scripts/.backup.env
 Thumbs.db
 *.log
 .vercel
+demo-out/

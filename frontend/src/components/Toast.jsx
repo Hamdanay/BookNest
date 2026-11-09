@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Sparkles, AlertTriangle, Info, X } from 'lucide-react';
 
 let toastHandler = null;
 
@@ -18,30 +19,42 @@ export function ToastHost() {
 
   useEffect(() => {
     if (!toast.open) return;
-    const t = setTimeout(() => setToast((s) => ({ ...s, open: false })), 3200);
+    const t = setTimeout(() => setToast((s) => ({ ...s, open: false })), 3500);
     return () => clearTimeout(t);
   }, [toast.open, toast.message]);
 
   const styles = {
-    success: 'border-nest-gold/40 bg-gradient-to-r from-nest-secondary to-nest-warm',
-    error: 'border-nest-danger/50 bg-gradient-to-r from-nest-danger/95 to-[#6b3030]',
-    info: 'border-nest-gold/30 bg-gradient-to-r from-[#1e3329] to-nest-warm',
+    success: 'border-forest-amber/40 bg-[#161B18]/95 text-forest-mist shadow-bioglow',
+    error: 'border-rose-500/40 bg-[#2A1719]/95 text-rose-200',
+    info: 'border-forest-sage/40 bg-[#182420]/95 text-forest-mist',
   };
 
-  const icon = {
-    error: 'fa-circle-xmark',
-    info: 'fa-circle-info',
-    success: 'fa-circle-check',
-  }[toast.type] || 'fa-circle-check';
+  const Icon = {
+    error: AlertTriangle,
+    info: Info,
+    success: Sparkles,
+  }[toast.type] || Sparkles;
+
+  if (!toast.open) return null;
 
   return (
     <div
-      className={`fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[100] flex items-center gap-3 px-4 py-3 rounded-xl text-mist text-sm shadow-folio border transition-all duration-300 safe-bottom ${
+      role="status"
+      className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-xl transition-all duration-300 animate-slide-up ${
         styles[toast.type] || styles.success
-      } ${toast.open ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'}`}
+      }`}
     >
-      <i className={`fa-solid ${icon} text-nest-gold`} />
-      <span className="font-medium">{toast.message}</span>
+      <div className="h-6 w-6 rounded-full bg-forest-amber/20 flex items-center justify-center text-forest-amber shrink-0">
+        <Icon size={14} />
+      </div>
+      <span className="text-xs font-serif font-medium tracking-wide">{toast.message}</span>
+      <button
+        type="button"
+        onClick={() => setToast((s) => ({ ...s, open: false }))}
+        className="p-1 rounded text-forest-sage hover:text-forest-mist ml-1"
+      >
+        <X size={14} />
+      </button>
     </div>
   );
 }

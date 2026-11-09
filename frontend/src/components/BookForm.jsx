@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Book,
+  Barcode,
+  Layers,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
+  Save,
+  Feather,
+} from 'lucide-react';
 import { api } from '../api/client';
 import { showToast } from './Toast';
 import PageHeader from './PageHeader';
@@ -27,14 +37,15 @@ const emptyForm = {
   cover: '',
 };
 
-function Section({ title, children }) {
+function SanctuarySection({ title, icon: Icon, children }) {
   return (
-    <section className="space-y-4">
-      <h2 className="font-display text-base font-semibold text-folio-ink border-b border-folio-line pb-2">
-        {title}
-      </h2>
+    <div className="space-y-4 pt-3">
+      <div className="flex items-center gap-2 pb-2.5 border-b border-forest-sage/15 text-forest-mist">
+        <Icon size={16} className="text-forest-amber" />
+        <h3 className="font-serif font-bold text-base tracking-wide">{title}</h3>
+      </div>
       {children}
-    </section>
+    </div>
   );
 }
 
@@ -119,7 +130,7 @@ export default function BookForm({ bookId = null }) {
     try {
       const url = await api.uploadCover(file);
       setField('cover', url);
-      showToast('Cover berhasil diunggah');
+      showToast('Gambar sampul tersimpan di naungan sanctuary');
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -139,7 +150,7 @@ export default function BookForm({ bookId = null }) {
       return;
     }
     if (!form.lokasiRak.trim()) {
-      showToast('Lokasi rak wajib diisi', 'error');
+      showToast('Lokasi rak wajib ditentukan', 'error');
       return;
     }
 
@@ -154,11 +165,11 @@ export default function BookForm({ bookId = null }) {
     try {
       if (bookId) {
         await api.updateBook(bookId, payload);
-        showToast('Buku berhasil diperbarui');
+        showToast('Naskah berhasil diperbarui di arsip');
         navigate(`/koleksi/${bookId}`);
       } else {
         const created = await api.createBook(payload);
-        showToast('Buku baru berhasil ditambahkan');
+        showToast('Naskah baru telah diukir ke perpustakaan');
         navigate(`/koleksi/${created.id}`);
       }
     } catch (err) {
@@ -172,10 +183,7 @@ export default function BookForm({ bookId = null }) {
     return <FolioSkeleton lines={8} />;
   }
 
-  const title = bookId ? 'Edit data buku' : 'Tambah buku baru';
-  const desc = bookId
-    ? 'Perbarui entri di arsip koleksi.'
-    : 'Catat judul baru ke dalam perpustakaan hutan.';
+  const isEdit = Boolean(bookId);
   const showIsbnError = isbnTouched && isbnResult && !isbnResult.ok;
   const rackNames = new Set(racks.map((r) => r.name));
   const rackSelectValue =
@@ -189,26 +197,52 @@ export default function BookForm({ bookId = null }) {
   const showCustomRack = rackSelectValue === CUSTOM_RACK;
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-3xl w-full">
-      <PageHeader title={title} description={desc} />
+    <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
+      <PageHeader
+        badge="SCRIBE SANCTUARY"
+        title={isEdit ? 'Ukir Suntingan Naskah' : 'Pendaftaran Naskah Baru'}
+        description={
+          isEdit
+            ? 'Perbarui metadata bibliografi atau mutasikan eksemplar ke dahan rak lain.'
+            : 'Mencatatkan naskah fisik baru ke dalam sanctuary hidup di bawah kanopi.'
+        }
+      />
 
-      <form onSubmit={handleSubmit} className="elf-folio p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
-        <Section title="Informasi bibliografi">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Judul buku</label>
-              <input required value={form.judul} onChange={(e) => setField('judul', e.target.value)} className="elf-input" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Penulis</label>
-              <input required value={form.penulis} onChange={(e) => setField('penulis', e.target.value)} className="elf-input" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5" htmlFor="isbn-input">
-                ISBN
+      <form onSubmit={handleSubmit} className="sanctuary-card p-6 md:p-8 space-y-6">
+        {/* Bibliografi */}
+        <SanctuarySection title="Metadata Bibliografi" icon={Barcode}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Judul Lengkap Naskah <span className="text-forest-amber">*</span>
               </label>
               <input
-                id="isbn-input"
+                required
+                value={form.judul}
+                onChange={(e) => setField('judul', e.target.value)}
+                placeholder="Contoh: Filosofi Teras"
+                className="sanctuary-input font-serif text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Penulis / Pengarang <span className="text-forest-amber">*</span>
+              </label>
+              <input
+                required
+                value={form.penulis}
+                onChange={(e) => setField('penulis', e.target.value)}
+                placeholder="Nama penulis"
+                className="sanctuary-input"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Nomor ISBN <span className="text-forest-amber">*</span>
+              </label>
+              <input
                 required
                 value={form.isbn}
                 onChange={(e) => {
@@ -217,25 +251,47 @@ export default function BookForm({ bookId = null }) {
                   if (d.length === 10 || d.length === 13) setIsbnTouched(true);
                 }}
                 onBlur={() => setIsbnTouched(true)}
-                aria-invalid={showIsbnError}
-                aria-describedby="isbn-hint"
-                className={`elf-input ${showIsbnError ? 'ring-2 ring-nest-danger/60' : ''}`}
-                placeholder="978-... atau ISBN-10"
+                placeholder="978-... atau 10 digit"
+                className={`sanctuary-input font-mono ${
+                  showIsbnError ? 'border-rose-500' : ''
+                }`}
               />
-              <p id="isbn-hint" className={`text-[11px] mt-1 ${showIsbnError ? 'text-nest-danger' : 'text-folio-muted'}`}>
-                {showIsbnError
-                  ? isbnResult.error
-                  : isbnResult?.ok
-                    ? `ISBN valid (${isbnResult.normalized.length} digit)`
-                    : 'ISBN-10 atau ISBN-13 dengan angka periksa yang benar.'}
-              </p>
+              <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono">
+                {showIsbnError ? (
+                  <span className="text-rose-400 flex items-center gap-1">
+                    <AlertCircle size={12} />
+                    {isbnResult.error}
+                  </span>
+                ) : isbnResult?.ok ? (
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 size={12} />
+                    ISBN valid ({isbnResult.normalized.length} digit)
+                  </span>
+                ) : (
+                  <span className="text-forest-sage/60">
+                    Format ISBN-10 / ISBN-13
+                  </span>
+                )}
+              </div>
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Penerbit</label>
-              <input required value={form.penerbit} onChange={(e) => setField('penerbit', e.target.value)} className="elf-input" />
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Penerbit <span className="text-forest-amber">*</span>
+              </label>
+              <input
+                required
+                value={form.penerbit}
+                onChange={(e) => setField('penerbit', e.target.value)}
+                placeholder="Nama penerbit"
+                className="sanctuary-input"
+              />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Tahun terbit</label>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Tahun Cetak <span className="text-forest-amber">*</span>
+              </label>
               <input
                 type="number"
                 required
@@ -243,134 +299,184 @@ export default function BookForm({ bookId = null }) {
                 max={2030}
                 value={form.tahunTerbit}
                 onChange={(e) => setField('tahunTerbit', e.target.value)}
-                className="elf-input"
+                placeholder="YYYY"
+                className="sanctuary-input font-mono"
               />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Kategori</label>
-              <select required value={form.kategori} onChange={(e) => setField('kategori', e.target.value)} className="elf-input">
-                <option value="">Pilih kategori</option>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Klasifikasi Kategori <span className="text-forest-amber">*</span>
+              </label>
+              <select
+                required
+                value={form.kategori}
+                onChange={(e) => setField('kategori', e.target.value)}
+                className="sanctuary-input"
+              >
+                <option value="">Pilih Kategori</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.name}>{c.name}</option>
+                  <option key={c.id} value={c.name} className="bg-[#101513]">
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
-        </Section>
+        </SanctuarySection>
 
-        <Section title="Informasi inventaris">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Eksemplar Fisik & Rak */}
+        <SanctuarySection title="Fisik & Penempatan Rak" icon={Layers}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Jumlah eksemplar</label>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Jumlah Eksemplar <span className="text-forest-amber">*</span>
+              </label>
               <input
                 type="number"
                 required
                 min={0}
                 value={form.jumlahEksemplar}
                 onChange={(e) => setField('jumlahEksemplar', e.target.value)}
-                className="elf-input"
+                placeholder="0"
+                className="sanctuary-input font-mono"
               />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Lokasi rak</label>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Lokasi Rak Kayu <span className="text-forest-amber">*</span>
+              </label>
               <select
                 value={rackSelectValue}
                 onChange={(e) => onRackSelect(e.target.value)}
-                className="elf-input"
+                className="sanctuary-input font-mono"
                 required={!showCustomRack}
               >
-                <option value="">Pilih rak</option>
+                <option value="">Pilih Rak</option>
                 {racks.map((r) => (
-                  <option key={r.id} value={r.name}>{r.name}</option>
+                  <option key={r.id} value={r.name} className="bg-[#101513]">
+                    {r.name}
+                  </option>
                 ))}
-                <option value={CUSTOM_RACK}>Rak baru...</option>
+                <option value={CUSTOM_RACK} className="bg-[#101513]">+ Ukir Rak Baru...</option>
               </select>
               {showCustomRack && (
                 <input
                   required
                   value={form.lokasiRak}
                   onChange={(e) => setField('lokasiRak', e.target.value)}
-                  placeholder="Contoh: Rak Fiksi A"
-                  className="elf-input mt-2"
+                  placeholder="Ketik kode rak baru (misal: RAK-C3)"
+                  className="sanctuary-input font-mono mt-2"
                 />
               )}
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Kondisi buku</label>
-              <select value={form.kondisi} onChange={(e) => setField('kondisi', e.target.value)} className="elf-input">
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Kondisi Fisik
+              </label>
+              <select
+                value={form.kondisi}
+                onChange={(e) => setField('kondisi', e.target.value)}
+                className="sanctuary-input"
+              >
                 {KONDISI.map((k) => (
-                  <option key={k} value={k}>{k}</option>
+                  <option key={k} value={k} className="bg-[#101513]">
+                    {k}
+                  </option>
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-folio-ink mb-1.5">Status koleksi</label>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Status Ketersediaan
+              </label>
               <select
                 value={form.status}
                 onChange={(e) => setField('status', e.target.value)}
-                className="elf-input"
+                className="sanctuary-input"
               >
                 {statusOptions.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s} className="bg-[#101513]">
+                    {s}
+                  </option>
                 ))}
               </select>
               {!pairResult.ok && (
-                <p className="text-[11px] text-nest-danger mt-1">{pairResult.error}</p>
+                <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1 font-mono">
+                  <AlertCircle size={12} />
+                  {pairResult.error}
+                </p>
               )}
             </div>
           </div>
-        </Section>
+        </SanctuarySection>
 
-        <Section title="Informasi tambahan">
-          <div>
-            <label className="block text-xs font-semibold text-folio-ink mb-1.5">Deskripsi</label>
-            <textarea
-              rows={3}
-              value={form.deskripsi}
-              onChange={(e) => setField('deskripsi', e.target.value)}
-              className="elf-input resize-y"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-folio-ink mb-1.5">Cover buku</label>
-            <div className="flex flex-col sm:flex-row gap-4 items-start">
-              <CoverImage
-                judul={form.judul || 'Pratinjau sampul'}
-                penulis={form.penulis}
-                cover={form.cover}
-                className="w-28 h-40 object-cover rounded-xl ring-1 ring-folio-line flex-shrink-0"
+        {/* Sampul & Deskripsi */}
+        <SanctuarySection title="Sampul Hardcover & Sinopsis" icon={Feather}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Sinopsis / Catatan Kurator
+              </label>
+              <textarea
+                rows={3}
+                value={form.deskripsi}
+                onChange={(e) => setField('deskripsi', e.target.value)}
+                placeholder="Deskripsi atau catatan tentang naskah ini..."
+                className="sanctuary-input font-sans text-sm"
               />
-              <div className="flex-1 w-full space-y-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onCoverFile}
-                  className="text-sm text-folio-muted file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-nest-secondary file:text-mist file:text-xs file:font-medium"
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                Berkas Sampul
+              </label>
+              <div className="flex flex-col sm:flex-row gap-4 items-start p-4 rounded-xl bg-[#101513]/70 border border-forest-sage/15">
+                <CoverImage
+                  judul={form.judul || 'Pratinjau Sampul'}
+                  penulis={form.penulis}
+                  cover={form.cover}
+                  className="w-20 h-28 object-cover rounded-lg border border-forest-sage/20 shrink-0"
                 />
-                <input
-                  value={form.cover}
-                  onChange={(e) => setField('cover', e.target.value)}
-                  placeholder="URL gambar sampul (opsional)"
-                  className="elf-input"
-                />
-                <p className="text-[11px] text-folio-muted">
-                  Jika URL kosong atau gagal dimuat, sampul digenerate dari judul.
-                </p>
+                <div className="flex-1 w-full space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onCoverFile}
+                    className="text-xs text-forest-sage file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-forest-moss file:text-forest-amber file:text-xs file:font-mono cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={form.cover}
+                    onChange={(e) => setField('cover', e.target.value)}
+                    placeholder="Atau tautan URL gambar sampul..."
+                    className="sanctuary-input text-xs font-mono"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </Section>
+        </SanctuarySection>
 
-        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t border-folio-line">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-forest-sage/15">
           <button
             type="button"
             onClick={() => navigate(bookId ? `/koleksi/${bookId}` : '/koleksi')}
-            className="elf-btn-ghost text-folio-ink justify-center min-h-[44px]"
+            className="sanctuary-btn-secondary"
           >
             Batal
           </button>
-          <button type="submit" disabled={saving} className="elf-btn disabled:opacity-50 justify-center w-full sm:w-auto">
-            {saving ? 'Menyimpan...' : 'Simpan buku'}
+          <button
+            type="submit"
+            disabled={saving}
+            className="sanctuary-btn-amber"
+          >
+            <Save size={15} />
+            <span>{saving ? 'Mengukir ke Arsip...' : isEdit ? 'Simpan Suntingan' : 'Daftarkan Naskah'}</span>
           </button>
         </div>
       </form>

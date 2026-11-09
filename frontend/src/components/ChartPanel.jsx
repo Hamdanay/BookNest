@@ -1,4 +1,13 @@
-const RACK_COLORS = ['#1a2822', '#2f4f40', '#4a6b58', '#c9a962', '#6b8f7a', '#9e4a4a', '#8a7b4a', '#5c4033'];
+const RACK_PALETTE = [
+  '#f59e0b', // Amber
+  '#38bdf8', // Sky
+  '#10b981', // Emerald
+  '#818cf8', // Indigo
+  '#fb7185', // Rose
+  '#a78bfa', // Violet
+  '#34d399', // Mint
+  '#94a3b8', // Slate
+];
 
 export function CategoryBarChart({ labels, values }) {
   const items = labels.map((label, i) => ({
@@ -6,28 +15,41 @@ export function CategoryBarChart({ labels, values }) {
     value: Number(values[i]) || 0,
   }));
   const max = Math.max(...items.map((i) => i.value), 1);
+  const total = items.reduce((sum, i) => sum + i.value, 0);
 
   if (!items.length) {
-    return <p className="text-xs text-folio-muted text-center py-8">Belum ada data kategori.</p>;
+    return (
+      <div className="py-12 text-center text-xs text-slate-500">
+        Belum ada data kategori yang tercatat.
+      </div>
+    );
   }
 
   return (
-    <ul className="space-y-3">
-      {items.map((item) => (
-        <li key={item.label}>
-          <div className="flex items-baseline justify-between gap-3 mb-1">
-            <span className="text-xs font-medium text-folio-ink truncate">{item.label}</span>
-            <span className="text-xs tabular-nums text-folio-muted flex-shrink-0">{item.value}</span>
+    <div className="space-y-3.5">
+      {items.map((item, idx) => {
+        const pct = Math.round((item.value / (total || 1)) * 100);
+        return (
+          <div key={item.label} className="group">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="font-medium text-slate-300 truncate group-hover:text-amber-400 transition-colors">
+                {item.label}
+              </span>
+              <div className="flex items-center gap-2 font-mono text-slate-400">
+                <span className="text-slate-200 font-semibold">{item.value}</span>
+                <span className="text-[10px] text-slate-500">({pct}%)</span>
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-slate-800/80 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-amber-500/80 transition-all duration-500 group-hover:bg-amber-400"
+                style={{ width: `${Math.max(4, (item.value / max) * 100)}%` }}
+              />
+            </div>
           </div>
-          <div className="h-2 rounded-full bg-folio-ink/10 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-nest-warm to-nest-olive"
-              style={{ width: `${Math.max(6, (item.value / max) * 100)}%` }}
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
+        );
+      })}
+    </div>
   );
 }
 
@@ -36,12 +58,16 @@ export function RackDonutChart({ labels, values }) {
     .map((label, i) => ({
       label,
       value: Number(values[i]) || 0,
-      color: RACK_COLORS[i % RACK_COLORS.length],
+      color: RACK_PALETTE[i % RACK_PALETTE.length],
     }))
     .filter((i) => i.value > 0);
 
   if (!items.length) {
-    return <p className="text-xs text-folio-muted text-center py-8">Belum ada data rak.</p>;
+    return (
+      <div className="py-12 text-center text-xs text-slate-500">
+        Belum ada data rak inventaris.
+      </div>
+    );
   }
 
   const total = items.reduce((sum, i) => sum + i.value, 0);
@@ -54,30 +80,49 @@ export function RackDonutChart({ labels, values }) {
   });
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-5">
+    <div className="flex flex-col sm:flex-row items-center gap-6">
       <div
-        className="w-36 h-36 rounded-full flex-shrink-0 shadow-inner"
+        className="w-36 h-36 rounded-full flex-shrink-0 relative shadow-md p-3.5"
         style={{
           background: `conic-gradient(${stops.join(', ')})`,
         }}
         aria-hidden
       >
-        <div className="w-full h-full p-8">
-          <div className="w-full h-full rounded-full bg-nest-surface flex flex-col items-center justify-center">
-            <span className="font-display text-lg font-semibold text-folio-ink tabular-nums">{total}</span>
-            <span className="text-[10px] text-folio-muted">eksemplar</span>
-          </div>
+        <div className="w-full h-full rounded-full bg-slate-900 border border-slate-800 flex flex-col items-center justify-center">
+          <span className="text-xl font-bold font-mono text-slate-100 tabular-nums">
+            {total}
+          </span>
+          <span className="text-[10px] font-medium text-slate-400">
+            eksemplar
+          </span>
         </div>
       </div>
-      <ul className="w-full space-y-1.5 min-w-0">
-        {items.map((item) => (
-          <li key={item.label} className="flex items-center gap-2 text-xs text-folio-ink">
-            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: item.color }} />
-            <span className="truncate flex-1">{item.label}</span>
-            <span className="tabular-nums text-folio-muted">{item.value}</span>
-          </li>
-        ))}
-      </ul>
+
+      <div className="w-full space-y-2 min-w-0">
+        {items.map((item) => {
+          const pct = Math.round((item.value / total) * 100);
+          return (
+            <div
+              key={item.label}
+              className="flex items-center justify-between text-xs py-1 px-2 rounded-md hover:bg-slate-800/40 transition-colors"
+            >
+              <div className="flex items-center gap-2 truncate min-w-0">
+                <span
+                  className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                  style={{ background: item.color }}
+                />
+                <span className="truncate text-slate-300 font-medium">
+                  {item.label}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 font-mono tabular-nums text-slate-400 shrink-0">
+                <span className="text-slate-200">{item.value}</span>
+                <span className="text-[10px] text-slate-400">({pct}%)</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

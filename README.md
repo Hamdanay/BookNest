@@ -1,8 +1,9 @@
-# BookNest — Manajemen Koleksi Buku
+# BookNest: Manajemen Koleksi Buku
 
 [![BookNest CI Pipeline](https://github.com/Hamdanay/BookNest/actions/workflows/ci.yml/badge.svg)](https://github.com/Hamdanay/BookNest/actions/workflows/ci.yml)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
 ![Nginx](https://img.shields.io/badge/Reverse_Proxy-Nginx-009639?logo=nginx)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_16-4169E1?logo=postgresql)
 ![SQLite](https://img.shields.io/badge/Database-SQLite_WAL-003B57?logo=sqlite)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js_20-339933?logo=node.js)
 ![React](https://img.shields.io/badge/Frontend-React_18-61DAFB?logo=react)
@@ -206,3 +207,20 @@ Antarmuka mengusung tema **Woodland / Vintage Folio** yang elegan dengan palet w
 * Background: `#F8F3EE`
 * Accent Gold: `#C99A5A`
 * Olive Green: `#6C7A5A`
+
+---
+
+## AI Usage Declaration
+
+Sesuai dengan ketentuan integritas akademik Ujian Tengah Semester (UTS) mata kuliah Cloud Services:
+* **Tool AI yang Digunakan:** Antigravity (Google DeepMind Agentic AI Assistant) & Gemini 2.5.
+* **Cakupan Penggunaan (< 50% dari total implementasi):**
+  1. *Konfigurasi Multi-stage Build Dockerfile:* Asistensi penyusunan sintaks multi-stage build standar produksi dengan non-root user dan Nginx reverse proxy.
+  2. *Refaktor Koneksi PostgreSQL & Skema SQL:* Asistensi penulisan skrip inisialisasi tabel SQL (`init-db.sql`) dan connection pool PostgreSQL (`pg`).
+  3. *Review Dokumen & Analisis Arsitektur Cloud:* Membantu penataan struktur format laporan komparasi model layanan cloud (IaaS, PaaS, SaaS, BaaS, FaaS).
+* **Prompt Utama yang Digunakan:**
+  - *"Konversikan backend Dockerfile dan frontend Dockerfile menjadi multi-stage build yang aman dengan non-root user dan alpine base image."*
+  - *"Buat konfigurasi docker-compose.yml multi-tier yang menghubungkan frontend Nginx, backend Express.js, dan database PostgreSQL 16 dengan named volume, network terisolasi, dan profile tools untuk Adminer."*
+  - *"Buatkan unit test dan skrip inisialisasi tabel database PostgreSQL untuk mendukung audit trail dan inventaris buku."*
+* **Implementasi Mandiri oleh Mahasiswa:**
+  - Logika bisnis inventaris, verifikasi ISBN-10/13, validasi status dan kondisi buku, integrasi antarmuka React 3D viewer, eksekusi pengujian lokal, pengujian persistensi volume Docker, serta rekaman video demo langsung.

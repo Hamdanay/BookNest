@@ -1,4 +1,34 @@
 services:
+  # ==============================================================
+  # 1. DATABASE SERVICE (PostgreSQL 16 Multi-Tier Container)
+  # ==============================================================
+  db:
+    image: postgres:16-alpine
+    container_name: booknest-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-booknest}
+      POSTGRES_USER: ${POSTGRES_USER:-booknest_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-booknest_pass}
+    volumes:
+      # Data persisten disimpan di named volume agar tidak hilang saat container restart
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # Uji kesiapan koneksi database PostgreSQL sebelum backend diizinkan aktif
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-booknest_user} -d ${POSTGRES_DB:-booknest}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - booknest-net
+
+  # ==============================================================
+  # 2. BACKEND API SERVICE (Express.js Multi-Stage Container)
+  # ==============================================================
   backend:
     build:
       context: ./backend
@@ -8,26 +38,34 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3002
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB:-booknest}
+      - DB_USER=${POSTGRES_USER:-booknest_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-booknest_pass}
     volumes:
-      # Data SQLite dan uploads disimpan di Docker Volume agar tidak hilang saat container restart
       - booknest-data:/app/data
       - booknest-uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy # Backend hanya jalan setelah database terbukti sehat
     logging:
-      # Mencegah disk penuh: Log dibatasi maksimal 10 MB per file, simpan 3 file rotasi
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      # Cek kesehatan API setiap 20 detik langsung ke endpoint /api/health
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
-      interval: 20s
+      interval: 15s
       timeout: 5s
       retries: 3
       start_period: 5s
     networks:
       - booknest-net
 
+  # ==============================================================
+  # 3. FRONTEND WEB SERVICE (React SPA + Nginx Reverse Proxy)
+  # ==============================================================
   frontend:
     build:
       context: ./frontend
@@ -35,7 +73,7 @@ services:
     container_name: booknest-frontend
     restart: unless-stopped
     ports:
-      # Akses aplikasi lewat http://localhost:8080
+      # Akses aplikasi utama melalui http://localhost:8080
       - "8080:80"
     depends_on:
       backend:
@@ -46,7 +84,6 @@ services:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      # Cek kesehatan Web Server Nginx
       test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:80/ || exit 1"]
       interval: 20s
       timeout: 5s
@@ -56,13 +93,31 @@ services:
       - booknest-net
 
   # ==============================================================
-  # STACK MONITORING (cAdvisor + Prometheus + Grafana)
+  # 4. TOOLS PROFILE SERVICE (Database Management UI - Adminer)
+  # ==============================================================
+  adminer:
+    image: adminer:4.8.1
+    container_name: booknest-adminer
+    restart: unless-stopped
+    profiles:
+      - tools # Hanya aktif jika dipanggil dengan flag --profile tools
+    ports:
+      - "8088:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - booknest-net
+
+  # ==============================================================
+  # 5. OBSERVABILITY STACK (Prometheus + Grafana + cAdvisor)
   # ==============================================================
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: booknest-cadvisor
     restart: unless-stopped
-    # Port 8085 digunakan agar tidak bentrok dengan frontend BookNest di port 8080
     ports:
       - "8085:8080"
     volumes:
@@ -87,7 +142,6 @@ services:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     ports:
-      # UI Prometheus untuk ad-hoc PromQL query
       - "9090:9090"
     networks:
       - booknest-net
@@ -97,7 +151,6 @@ services:
     container_name: booknest-grafana
     restart: unless-stopped
     ports:
-      # Dashboard visual Grafana
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -116,12 +169,19 @@ services:
     networks:
       - booknest-net
 
+# ==============================================================
+# PERSISTENT STORAGE (Named Volumes)
+# ==============================================================
 volumes:
+  postgres-data:
   booknest-data:
   booknest-uploads:
   prometheus-data:
   grafana-data:
 
+# ==============================================================
+# USER-DEFINED ISOLATED BRIDGE NETWORK
+# ==============================================================
 networks:
   booknest-net:
     driver: bridge

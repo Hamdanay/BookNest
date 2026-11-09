@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
+import {
+  FolderTree,
+  Plus,
+  Edit2,
+  Trash2,
+  Check,
+  X,
+  Book,
+} from 'lucide-react';
 import { api } from '../api/client';
 import { showToast } from '../components/Toast';
 import PageHeader from '../components/PageHeader';
+import { DEMO_CATEGORIES } from '../lib/demoData';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -11,18 +21,31 @@ export default function Categories() {
   const [editName, setEditName] = useState('');
 
   function load() {
-    api.getCategories().then(setCategories).catch(() => setCategories([]));
+    api
+      .getCategories()
+      .then(setCategories)
+      .catch(() => setCategories(DEMO_CATEGORIES));
   }
 
   useEffect(() => {
     load();
   }, []);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    function onKey(e) {
+      if (e.key === 'Escape') setModalOpen(false);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [modalOpen]);
+
   async function handleCreate(e) {
     e.preventDefault();
+    if (!newName.trim()) return;
     try {
       await api.createCategory(newName.trim());
-      showToast('Kategori ditambahkan');
+      showToast('Tajuk klasifikasi baru telah ditanam');
       setNewName('');
       setModalOpen(false);
       load();
@@ -32,9 +55,10 @@ export default function Categories() {
   }
 
   async function saveEdit(id) {
+    if (!editName.trim()) return;
     try {
       await api.updateCategory(id, editName.trim());
-      showToast('Kategori diperbarui');
+      showToast('Nama kategori diperbarui');
       setEditId(null);
       load();
     } catch (err) {
@@ -43,10 +67,10 @@ export default function Categories() {
   }
 
   async function remove(id, name) {
-    if (!confirm(`Hapus kategori "${name}"?`)) return;
+    if (!window.confirm(`Hapus kategori "${name}"? Seluruh naskah terhubung akan dialihkan ke klasifikasi Umum.`)) return;
     try {
       await api.deleteCategory(id);
-      showToast('Kategori dihapus');
+      showToast('Kategori telah dihapus');
       load();
     } catch (err) {
       showToast(err.message, 'error');
@@ -54,161 +78,143 @@ export default function Categories() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       <PageHeader
-        title="Kategori buku"
-        description="Kelompokkan koleksi seperti rak-rak di perpustakaan hutan — fiksi, sejarah, dan seterusnya."
+        badge="TAXONOMY CANOPY"
+        title="Klasifikasi & Tajuk Subjek"
+        description="Pohon taksonomi untuk memetakan rumpun ilmu dan tema naskah di perpustakaan hutan purba."
         action={
-          <button type="button" onClick={() => setModalOpen(true)} className="elf-btn">
-            <i className="fa-solid fa-leaf text-nest-gold" /> Tambah kategori
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="sanctuary-btn-amber"
+          >
+            <Plus size={16} />
+            <span>Tanam Kategori Baru</span>
           </button>
         }
       />
-      <div className="elf-divider" />
 
-      <div className="md:hidden max-w-3xl space-y-2">
-        {categories.map((c) => (
-          <div key={c.id} className="elf-folio p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1 min-w-0">
-              {editId === c.id ? (
-                <input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="elf-input w-full"
-                />
-              ) : (
-                <p className="font-display font-semibold text-folio-ink break-words">{c.name}</p>
-              )}
-              <p className="text-xs text-folio-muted mt-1">{c.jumlahJudul} judul</p>
-            </div>
-            <div className="flex gap-2 justify-end">
-              {editId === c.id ? (
-                <>
-                  <button type="button" onClick={() => saveEdit(c.id)} className="elf-btn text-xs py-2 px-3">
-                    Simpan
-                  </button>
-                  <button type="button" onClick={() => setEditId(null)} className="elf-btn-ghost text-folio-ink text-xs">
-                    Batal
-                  </button>
-                </>
-              ) : (
-                <>
+      <div className="sanctuary-card p-0 overflow-hidden">
+        <div className="p-4 border-b border-forest-sage/15 flex items-center justify-between text-xs text-forest-sage">
+          <div className="flex items-center gap-2">
+            <FolderTree size={16} className="text-forest-amber" />
+            <span className="font-serif font-bold text-forest-mist text-sm">Daftar Tajuk Terdaftar</span>
+          </div>
+          <span className="font-mono text-forest-amber">{categories.length} cabang</span>
+        </div>
+
+        <div className="divide-y divide-forest-sage/10">
+          {categories.map((c) => (
+            <div
+              key={c.id}
+              className="p-4 flex items-center justify-between gap-4 hover:bg-forest-moss/20 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                {editId === c.id ? (
+                  <div className="flex items-center gap-2 max-w-md">
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="sanctuary-input font-serif text-sm"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(c.id)}
+                      className="p-2 rounded bg-forest-moss text-forest-amber hover:bg-forest-moss/80 transition-colors"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditId(null)}
+                      className="p-2 rounded bg-[#101513] text-forest-sage hover:text-forest-mist transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="font-serif font-bold text-base text-forest-mist">{c.name}</span>
+                    <span className="inline-flex items-center gap-1 font-mono text-[11px] px-2 py-0.5 rounded bg-[#101513] text-forest-amber border border-forest-sage/15">
+                      <Book size={11} />
+                      <span>{c.jumlahJudul} naskah</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {editId !== c.id && (
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       setEditId(c.id);
                       setEditName(c.name);
                     }}
-                    className="p-3 rounded-xl text-folio-muted hover:text-nest-gold hover:bg-white/40 min-w-[44px]"
-                    title="Edit"
+                    className="p-2 rounded text-forest-sage hover:text-forest-amber transition-colors"
+                    title="Sunting Tajuk"
                   >
-                    <i className="fa-solid fa-pen" />
+                    <Edit2 size={14} />
                   </button>
                   <button
                     type="button"
                     onClick={() => remove(c.id, c.name)}
-                    className="p-3 rounded-xl text-folio-muted hover:text-nest-danger hover:bg-white/40 min-w-[44px]"
-                    title="Hapus"
+                    className="p-2 rounded text-forest-sage hover:text-rose-400 transition-colors"
+                    title="Hapus Tajuk"
                   >
-                    <i className="fa-solid fa-trash-can" />
+                    <Trash2 size={14} />
                   </button>
-                </>
+                </div>
               )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="elf-folio overflow-hidden max-w-3xl p-0 hidden md:block">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="elf-table-head">
-              <th className="p-4 font-medium">Kategori</th>
-              <th className="p-4 text-center font-medium">Jumlah judul</th>
-              <th className="p-4 text-right font-medium">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm bg-white/20 divide-y divide-folio-line/80">
-            {categories.map((c) => (
-              <tr key={c.id} className="hover:bg-white/30 transition-colors">
-                <td className="p-4 font-medium text-folio-ink">
-                  {editId === c.id ? (
-                    <input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="elf-input max-w-xs py-1.5"
-                    />
-                  ) : (
-                    c.name
-                  )}
-                </td>
-                <td className="p-4 text-center tabular-nums text-folio-muted">{c.jumlahJudul}</td>
-                <td className="p-4 text-right space-x-2">
-                  {editId === c.id ? (
-                    <>
-                      <button type="button" onClick={() => saveEdit(c.id)} className="text-nest-warm text-xs font-semibold">
-                        Simpan
-                      </button>
-                      <button type="button" onClick={() => setEditId(null)} className="text-folio-muted text-xs">
-                        Batal
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditId(c.id);
-                          setEditName(c.name);
-                        }}
-                        className="p-2 rounded-lg text-folio-muted hover:text-nest-gold hover:bg-white/40"
-                        title="Edit"
-                      >
-                        <i className="fa-solid fa-pen" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => remove(c.id, c.name)}
-                        className="p-2 rounded-lg text-folio-muted hover:text-nest-danger hover:bg-white/40"
-                        title="Hapus"
-                      >
-                        <i className="fa-solid fa-trash-can" />
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
+      {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-nest-dark/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 safe-bottom">
-          <div className="elf-folio w-full max-w-md overflow-hidden max-h-[90dvh] overflow-y-auto rounded-b-none sm:rounded-b-2xl">
-            <div className="px-5 py-4 border-b border-folio-line flex items-center justify-between bg-white/30">
-              <h3 className="font-display font-semibold text-folio-ink">Kategori baru</h3>
-              <button type="button" onClick={() => setModalOpen(false)} className="text-folio-muted hover:text-folio-ink">
-                <i className="fa-solid fa-xmark" />
+        <div className="fixed inset-0 z-50 bg-[#101513]/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="sanctuary-card max-w-md w-full p-6 space-y-4 border-forest-amber/30 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-forest-sage/15">
+              <h3 className="font-serif text-lg font-bold text-forest-mist">Tanam Kategori Baru</h3>
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="p-1 rounded text-forest-sage hover:text-forest-mist"
+              >
+                <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleCreate} className="p-5 space-y-4">
+
+            <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-folio-ink mb-1.5">Nama kategori</label>
+                <label className="block text-xs font-mono text-forest-sage mb-1.5">
+                  Nama Tajuk Kategori
+                </label>
                 <input
-                  required
+                  type="text"
+                  placeholder="Misal: Filsafat Kuno, Sejarah Rimba, Sains..."
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="elf-input"
-                  placeholder="Contoh: Mitologi"
+                  className="sanctuary-input font-serif"
+                  autoFocus
+                  required
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setModalOpen(false)} className="elf-btn-ghost text-folio-ink">
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="sanctuary-btn-secondary"
+                >
                   Batal
                 </button>
-                <button type="submit" className="elf-btn text-sm py-2">
-                  Simpan
+                <button type="submit" className="sanctuary-btn-amber">
+                  Tanam Kategori
                 </button>
               </div>
             </form>
