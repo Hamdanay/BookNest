@@ -211,3 +211,18 @@ Antarmuka mengusung tema **Woodland / Vintage Folio** yang elegan dengan palet w
 * Olive Green: `#6C7A5A`
 
 ---
+
+## AI Usage Declaration
+
+Sesuai dengan ketentuan integritas akademik Ujian Tengah Semester (UTS) mata kuliah Cloud Services:
+* **Tool AI yang Digunakan:** Antigravity (Google DeepMind Agentic AI Assistant) & Gemini 2.5.
+* **Cakupan Penggunaan (< 50% dari total implementasi):**
+  1. *Konfigurasi Multi-Stage Build Dockerfile:* Asistensi penyusunan sintaks multi-stage build berstandar non-root user dan Nginx reverse proxy.
+  2. *Refaktor Koneksi PostgreSQL & Skema SQL:* Asistensi penulisan skrip inisialisasi tabel SQL (`init-db.sql`) dan connection pool PostgreSQL (`pg`).
+  3. *Review Dokumen & Analisis Arsitektur Cloud:* Membantu penataan struktur format laporan komparasi model layanan cloud (IaaS, PaaS, SaaS, BaaS, FaaS).
+* **Prompt Utama yang Digunakan:**
+  - *"Konversikan backend Dockerfile dan frontend Dockerfile menjadi multi-stage build yang aman dengan non-root user dan alpine base image."*
+  - *"Buat konfigurasi docker-compose.yml multi-tier yang menghubungkan frontend Nginx, backend Express.js, dan database PostgreSQL 16 dengan named volume, network terisolasi, dan profile tools untuk Adminer."*
+  - *"Buatkan unit test dan skrip inisialisasi tabel database PostgreSQL untuk mendukung audit trail dan inventaris buku."*
+* **Implementasi Mandiri oleh Mahasiswa:**
+  - Logika bisnis inventaris, verifikasi ISBN-10/13, validasi status dan kondisi buku, integrasi antarmuka React 3D viewer, eksekusi pengujian lokal, pengujian persistensi volume Docker, serta rekaman video demo langsung.
