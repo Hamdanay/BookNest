@@ -16,6 +16,8 @@ Sistem administrasi dan inventaris koleksi buku lokal/internal: bibliografi leng
 
 ## Arsitektur Infrastruktur
 
+![BookNest Architecture](docs/booknest-architecture.png)
+
 Aplikasi ini telah dikontainerisasi penuh menggunakan **Docker Compose** dengan pemisahan tanggung jawab yang terisolasi dan aman di dalam jaringan internal:
 
 ```
